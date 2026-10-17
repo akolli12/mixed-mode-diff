@@ -1,13 +1,7 @@
 module P67e596081a
 
 const N = 5
-const C_S = Float64[-1.00922, 1.33336, 2.33124, 0.962722, -1.44729]
-const C_V = Float64[0.617862, 1.27903, -0.316342, 1.84526, -1.46705, -1.21898, 1.14035, -1.24775, -1.52949, 0.890407, -0.606535, 0.542214, -0.398812, 0.127147, 0.700656]
-const C_D = Float64[1, 1, 1, 1, 1]
-const C_W = 0.301331
-const C_A = 4.24169
-const C_B = -3.98013
-const THETA0 = Float64[-0.896202, 6.65279, 2.73695, -4.03115, 1.78125]
+include(joinpath(@__DIR__, "..", "constants", "P67e596081a.jl"))
 
 function loss(θ::AbstractVector{T}) where {T<:Real}
     z = Vector{T}(undef, N)

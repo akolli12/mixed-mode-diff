@@ -1,0 +1,10 @@
+# constants for problems/P5cc18d9580.jl (not shown to the LLM)
+const C_G = 16
+const C_AMP = 1
+const C_F1 = 1.6045
+const C_F2 = 1.14001
+const C_P1 = 5.46534
+const C_P2 = 5.05873
+const C_R1 = 8.20053
+const C_R2 = 2.01313
+const THETA0 = Float64[0.0497031, 0.0497031, 0.0497031, 0.0497031, 0.0497031, 0.0497031, 0.0497031, 0.0497031, 0.0497031, 0.0497031, 0.0497031, 0.0497031, 0.0497031, 0.0497031, 0.0497031, 0.0497031]

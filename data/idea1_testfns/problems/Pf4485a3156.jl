@@ -1,12 +1,7 @@
 module Pf4485a3156
 
 const N = 2
-const C_S = Float64[-0.829176, 1.8593]
-const C_V = Float64[-0.779833, 0.3945, -0.191656, -1.05204, -1.72066, -0.485005]
-const C_D = Float64[1, 1000]
-const C_A = 1.27536
-const C_B = 1.44393
-const THETA0 = Float64[0.254911, -0.990869]
+include(joinpath(@__DIR__, "..", "constants", "Pf4485a3156.jl"))
 
 function loss(θ::AbstractVector{T}) where {T<:Real}
     z = Vector{T}(undef, N)

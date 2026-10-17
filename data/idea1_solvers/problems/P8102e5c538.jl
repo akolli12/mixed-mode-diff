@@ -1,15 +1,7 @@
 module P8102e5c538
 
 const N = 4
-const C_G = 16
-const C_AMP = 3
-const C_F1 = 0.678164
-const C_F2 = 2.31193
-const C_P1 = 0.0240966
-const C_P2 = 4.80149
-const C_R1 = 2.02115
-const C_R2 = 8.50339
-const THETA0 = Float64[0.00847033, 0.00847033, 0.00847033, 0.00847033]
+include(joinpath(@__DIR__, "..", "constants", "P8102e5c538.jl"))
 
 function loss(θ::AbstractVector{T}) where {T<:Real}
     G = C_G

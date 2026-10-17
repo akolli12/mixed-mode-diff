@@ -1,15 +1,7 @@
 module P365c14adb2
 
 const N = 16
-const C_G = 16
-const C_AMP = 0
-const C_F1 = 0.847017
-const C_F2 = 1.85195
-const C_P1 = 6.23638
-const C_P2 = 2.28066
-const C_R1 = 5.16284
-const C_R2 = 8.08799
-const THETA0 = Float64[0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125]
+include(joinpath(@__DIR__, "..", "constants", "P365c14adb2.jl"))
 
 function loss(θ::AbstractVector{T}) where {T<:Real}
     G = C_G

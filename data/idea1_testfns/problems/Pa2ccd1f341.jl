@@ -1,12 +1,7 @@
 module Pa2ccd1f341
 
 const N = 5
-const C_S = Float64[1.53633, 1.28529, 1.37694, 0.2376, 3.49893]
-const C_V = Float64[0.237295, 0.031829, 0.427984, -0.214294, 2.0523, 3.09818, -0.973773, -0.912289, 0.416126, -0.0449787, 0.544549, -0.839507, 1.85465, 1.31462, 0.462714]
-const C_D = Float64[10000, 1000, 100, 10, 1]
-const C_A = 2.18318
-const C_B = 1.76444
-const THETA0 = Float64[-1.15309, 3.29188, -3.77297, -1.5509, -2.40689]
+include(joinpath(@__DIR__, "..", "constants", "Pa2ccd1f341.jl"))
 
 function loss(θ::AbstractVector{T}) where {T<:Real}
     z = Vector{T}(undef, N)
