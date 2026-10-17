@@ -2,8 +2,9 @@
 
 This is the run plan for Idea 1: TextGrad updates the parameters θ of each problem in
 `data/`, and every update is scored against Enzyme's exact gradient. Artemis runs the
-pilot and the solver half of the main sweep. Alaina runs the rest, since those stages take
-the most machine time (mostly unattended).
+pilot, all the solver stages, the thinking-model comparison for `kimi-k2.6` and the
+consistency stage. Alaina runs the three largest stages: the test-function sweeps and
+`kimi-k3`.
 
 ## What is being varied
 
@@ -32,11 +33,14 @@ always current.
 | 1 | `pilot` | Artemis | 6 | 12 | 360 | 15 min |
 | 2 | `mainA-solvers` | Artemis | 20 | 40 | 1,200 | 45 min |
 | 3 | `mainA-testfns` | Alaina | 90 | 180 | 5,400 | 4 h |
-| 4 | `models-k26think` | Alaina | 20 | 20 | 600 | unknown: time it first (below) |
+| 4 | `models-k26think` | Artemis | 20 | 20 | 600 | unknown: time it first (below) |
 | 5 | `models-k3` | Alaina | 20 | 20 | 600 | unknown, likely 5–10 h: time it first |
-| 6 | `samples` | Alaina | 20 | 20 | 1,800 | 1 h |
-| 7 | `mainB-solvers` | Alaina | 40 | 80 | 2,400 | 1.5 h |
+| 6 | `samples` | Artemis | 20 | 20 | 1,800 | 1 h |
+| 7 | `mainB-solvers` | Artemis | 40 | 80 | 2,400 | 1.5 h |
 | 8 | `mainB-testfns` | Alaina | 180 | 360 | 10,800 | 8 h |
+
+The order matters only within each person's list (and stage 3 waits for the pilot). We can
+run our stages at the same time.
 
 - **models-k26think and models-k3** run 20 problems spread across families, n and
   conditioning with history feedback. They are compared with the same 20 problems from
@@ -106,7 +110,8 @@ sure the machine won't sleep.
   python/.venv/bin/python python/idea1/run.py --stage models-k3 --limit 1
   python/.venv/bin/python python/idea1/run.py --stage models-k3
   ```
-  If one `kimi-k3` run takes much more than 2 hours, tell Artemis before running the rest.
+  If one `kimi-k3` run takes much more than 2 hours, check with each other before running
+  the rest.
 
 ## What gets recorded
 
