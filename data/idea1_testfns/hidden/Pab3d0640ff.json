@@ -1,0 +1,19 @@
+{
+ "id": "ab3d0640ff",
+ "family": "quadratic",
+ "n": 2,
+ "seed": 1830880512,
+ "knobs": {
+  "kappa": 10
+ },
+ "theta_star": [
+  -0.3901025061575414,
+  1.9307300351912497
+ ],
+ "f_star": -4.93304,
+ "f_theta0": 3.6371111604646043,
+ "grad_norm_theta0": 21.000089258588197,
+ "grad_norm_at_theta_star": 3.8418752322458986e-14,
+ "dist_theta0_to_star": 1.4142136431899988,
+ "hessian_cond_exact": 10.0
+}

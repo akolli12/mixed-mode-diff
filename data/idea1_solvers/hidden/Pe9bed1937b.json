@@ -1,0 +1,22 @@
+{
+ "id": "e9bed1937b",
+ "family": "solver_chebyshev",
+ "n": 2,
+ "seed": 707104985,
+ "knobs": {
+  "amp": 3.0,
+  "contrast": 403.4287934927351,
+  "m": 30
+ },
+ "theta_star": [
+  0.04221062539142939,
+  67.70178819169756
+ ],
+ "f_star": -0.6199284452908651,
+ "f_star_kind": "best_known",
+ "f_theta0": -0.22282293882441764,
+ "grad_norm_theta0": 0.1082466507788665,
+ "lambda_min": 0.066116591227902,
+ "lambda_max": 67.88949719194501,
+ "loss_at_true_bounds": -0.5771159529036012
+}

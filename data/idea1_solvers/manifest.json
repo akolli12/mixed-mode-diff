@@ -1,0 +1,302 @@
+[
+ {
+  "id": "7f3c1c202b",
+  "file": "problems/P7f3c1c202b.jl",
+  "n": 1
+ },
+ {
+  "id": "01744525f6",
+  "file": "problems/P01744525f6.jl",
+  "n": 2
+ },
+ {
+  "id": "5c5e7a6163",
+  "file": "problems/P5c5e7a6163.jl",
+  "n": 4
+ },
+ {
+  "id": "3aae7b7e2d",
+  "file": "problems/P3aae7b7e2d.jl",
+  "n": 8
+ },
+ {
+  "id": "365c14adb2",
+  "file": "problems/P365c14adb2.jl",
+  "n": 16
+ },
+ {
+  "id": "57369edac1",
+  "file": "problems/P57369edac1.jl",
+  "n": 1
+ },
+ {
+  "id": "7dc0fec3e8",
+  "file": "problems/P7dc0fec3e8.jl",
+  "n": 2
+ },
+ {
+  "id": "24d015494b",
+  "file": "problems/P24d015494b.jl",
+  "n": 4
+ },
+ {
+  "id": "120cce0574",
+  "file": "problems/P120cce0574.jl",
+  "n": 8
+ },
+ {
+  "id": "3b391bfbef",
+  "file": "problems/P3b391bfbef.jl",
+  "n": 16
+ },
+ {
+  "id": "1bf1909689",
+  "file": "problems/P1bf1909689.jl",
+  "n": 1
+ },
+ {
+  "id": "972f9bec23",
+  "file": "problems/P972f9bec23.jl",
+  "n": 2
+ },
+ {
+  "id": "0a2afb5b25",
+  "file": "problems/P0a2afb5b25.jl",
+  "n": 4
+ },
+ {
+  "id": "0ad12f06ca",
+  "file": "problems/P0ad12f06ca.jl",
+  "n": 8
+ },
+ {
+  "id": "dea5f3d6d2",
+  "file": "problems/Pdea5f3d6d2.jl",
+  "n": 16
+ },
+ {
+  "id": "5be620b4d4",
+  "file": "problems/P5be620b4d4.jl",
+  "n": 1
+ },
+ {
+  "id": "e9bed1937b",
+  "file": "problems/Pe9bed1937b.jl",
+  "n": 2
+ },
+ {
+  "id": "8102e5c538",
+  "file": "problems/P8102e5c538.jl",
+  "n": 4
+ },
+ {
+  "id": "cd5e47a052",
+  "file": "problems/Pcd5e47a052.jl",
+  "n": 8
+ },
+ {
+  "id": "044731832b",
+  "file": "problems/P044731832b.jl",
+  "n": 16
+ },
+ {
+  "id": "3814c1d9b3",
+  "file": "problems/P3814c1d9b3.jl",
+  "n": 1
+ },
+ {
+  "id": "de2236b9aa",
+  "file": "problems/Pde2236b9aa.jl",
+  "n": 2
+ },
+ {
+  "id": "27d0ea2451",
+  "file": "problems/P27d0ea2451.jl",
+  "n": 4
+ },
+ {
+  "id": "5847372f06",
+  "file": "problems/P5847372f06.jl",
+  "n": 8
+ },
+ {
+  "id": "d5c4835964",
+  "file": "problems/Pd5c4835964.jl",
+  "n": 16
+ },
+ {
+  "id": "990e988084",
+  "file": "problems/P990e988084.jl",
+  "n": 1
+ },
+ {
+  "id": "5c7c0e02fb",
+  "file": "problems/P5c7c0e02fb.jl",
+  "n": 2
+ },
+ {
+  "id": "18cf7219ae",
+  "file": "problems/P18cf7219ae.jl",
+  "n": 4
+ },
+ {
+  "id": "de6ba3e405",
+  "file": "problems/Pde6ba3e405.jl",
+  "n": 8
+ },
+ {
+  "id": "8c9b5f5d8d",
+  "file": "problems/P8c9b5f5d8d.jl",
+  "n": 16
+ },
+ {
+  "id": "2f4c28a912",
+  "file": "problems/P2f4c28a912.jl",
+  "n": 1
+ },
+ {
+  "id": "fa91001ea8",
+  "file": "problems/Pfa91001ea8.jl",
+  "n": 2
+ },
+ {
+  "id": "a68d117585",
+  "file": "problems/Pa68d117585.jl",
+  "n": 4
+ },
+ {
+  "id": "b9f0e10562",
+  "file": "problems/Pb9f0e10562.jl",
+  "n": 8
+ },
+ {
+  "id": "14485ad6f6",
+  "file": "problems/P14485ad6f6.jl",
+  "n": 16
+ },
+ {
+  "id": "2426518390",
+  "file": "problems/P2426518390.jl",
+  "n": 1
+ },
+ {
+  "id": "e1b23e5e72",
+  "file": "problems/Pe1b23e5e72.jl",
+  "n": 2
+ },
+ {
+  "id": "a9a8375577",
+  "file": "problems/Pa9a8375577.jl",
+  "n": 4
+ },
+ {
+  "id": "b81506dbcc",
+  "file": "problems/Pb81506dbcc.jl",
+  "n": 8
+ },
+ {
+  "id": "45c1e57d25",
+  "file": "problems/P45c1e57d25.jl",
+  "n": 16
+ },
+ {
+  "id": "149a707782",
+  "file": "problems/P149a707782.jl",
+  "n": 1
+ },
+ {
+  "id": "f13d5a4714",
+  "file": "problems/Pf13d5a4714.jl",
+  "n": 2
+ },
+ {
+  "id": "6884386c02",
+  "file": "problems/P6884386c02.jl",
+  "n": 4
+ },
+ {
+  "id": "960515c5e5",
+  "file": "problems/P960515c5e5.jl",
+  "n": 8
+ },
+ {
+  "id": "d05ad77d60",
+  "file": "problems/Pd05ad77d60.jl",
+  "n": 16
+ },
+ {
+  "id": "1bda5f9e14",
+  "file": "problems/P1bda5f9e14.jl",
+  "n": 1
+ },
+ {
+  "id": "fd0e6d2a9b",
+  "file": "problems/Pfd0e6d2a9b.jl",
+  "n": 2
+ },
+ {
+  "id": "ea2efb14c5",
+  "file": "problems/Pea2efb14c5.jl",
+  "n": 4
+ },
+ {
+  "id": "58bf4b5e85",
+  "file": "problems/P58bf4b5e85.jl",
+  "n": 8
+ },
+ {
+  "id": "5cc18d9580",
+  "file": "problems/P5cc18d9580.jl",
+  "n": 16
+ },
+ {
+  "id": "f960a94ccf",
+  "file": "problems/Pf960a94ccf.jl",
+  "n": 1
+ },
+ {
+  "id": "660b4168f3",
+  "file": "problems/P660b4168f3.jl",
+  "n": 2
+ },
+ {
+  "id": "bdfa174a24",
+  "file": "problems/Pbdfa174a24.jl",
+  "n": 4
+ },
+ {
+  "id": "381406790f",
+  "file": "problems/P381406790f.jl",
+  "n": 8
+ },
+ {
+  "id": "9cbcb07bf7",
+  "file": "problems/P9cbcb07bf7.jl",
+  "n": 16
+ },
+ {
+  "id": "36b13132ed",
+  "file": "problems/P36b13132ed.jl",
+  "n": 1
+ },
+ {
+  "id": "7567af8bff",
+  "file": "problems/P7567af8bff.jl",
+  "n": 2
+ },
+ {
+  "id": "2f2e98570d",
+  "file": "problems/P2f2e98570d.jl",
+  "n": 4
+ },
+ {
+  "id": "480d596c2c",
+  "file": "problems/P480d596c2c.jl",
+  "n": 8
+ },
+ {
+  "id": "077b5e4a7f",
+  "file": "problems/P077b5e4a7f.jl",
+  "n": 16
+ }
+]

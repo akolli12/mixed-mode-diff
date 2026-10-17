@@ -1,0 +1,20 @@
+{
+ "id": "eca2cd1c3d",
+ "family": "logistic",
+ "n": 2,
+ "seed": 2285850609,
+ "knobs": {
+  "spread": 1,
+  "lam": 0.01
+ },
+ "theta_star": [
+  2.000981256840816,
+  0.7094221672427103
+ ],
+ "f_star": -2.260378578936348,
+ "f_theta0": -1.2186996077596715,
+ "grad_norm_theta0": 0.682431755097818,
+ "grad_norm_at_theta_star": 6.869241831984625e-17,
+ "dist_theta0_to_star": 3.6061788575600215,
+ "hessian_cond_at_opt": 3.521612084624222
+}

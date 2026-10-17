@@ -1,0 +1,18 @@
+{
+ "id": "f960a94ccf",
+ "family": "solver_sor",
+ "n": 1,
+ "seed": 1573948132,
+ "knobs": {
+  "amp": 2.0,
+  "contrast": 54.598150033144236,
+  "m": 20
+ },
+ "theta_star": [
+  1.7707403517178943
+ ],
+ "f_star": -0.9149534949329539,
+ "f_star_kind": "best_known",
+ "f_theta0": -0.1957944293993409,
+ "grad_norm_theta0": 0.2573884499783528
+}

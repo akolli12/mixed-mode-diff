@@ -1,0 +1,19 @@
+{
+ "id": "4e7af1ce81",
+ "family": "logcosh",
+ "n": 2,
+ "seed": 3385477325,
+ "knobs": {
+  "kappa": 1
+ },
+ "theta_star": [
+  -0.6190626420021453,
+  0.5762085921758924
+ ],
+ "f_star": 0.199222,
+ "f_theta0": 11.505568726930125,
+ "grad_norm_theta0": 3.168337919695234,
+ "grad_norm_at_theta_star": 1.3635249338271145e-15,
+ "dist_theta0_to_star": 4.242639241714706,
+ "hessian_cond_exact": 1.0
+}

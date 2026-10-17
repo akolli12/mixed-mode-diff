@@ -1,0 +1,19 @@
+{
+ "id": "11e3777dc6",
+ "family": "rosenbrock",
+ "n": 2,
+ "seed": 846275996,
+ "knobs": {
+  "b": 10
+ },
+ "theta_star": [
+  -3.229448873102127,
+  -1.2911643562766904
+ ],
+ "f_star": -0.46074,
+ "f_theta0": 5.0631751745364415,
+ "grad_norm_theta0": 18.009064132845847,
+ "grad_norm_at_theta_star": 2.8859664298481197e-13,
+ "dist_theta0_to_star": 1.6817422864078382,
+ "note": "n>=4 also has a local minimum near z_1=-1"
+}

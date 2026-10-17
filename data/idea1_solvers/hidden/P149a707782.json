@@ -1,0 +1,18 @@
+{
+ "id": "149a707782",
+ "family": "solver_sor",
+ "n": 1,
+ "seed": 3197797002,
+ "knobs": {
+  "amp": 0.0,
+  "contrast": 1.0,
+  "m": 20
+ },
+ "theta_star": [
+  1.7046032010382937
+ ],
+ "f_star": -1.605732119253023,
+ "f_star_kind": "best_known",
+ "f_theta0": -0.36385918102484355,
+ "grad_norm_theta0": 0.5684068461429247
+}

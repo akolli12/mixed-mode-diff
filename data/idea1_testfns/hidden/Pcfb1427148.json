@@ -1,0 +1,19 @@
+{
+ "id": "cfb1427148",
+ "family": "quadratic",
+ "n": 2,
+ "seed": 911493966,
+ "knobs": {
+  "kappa": 100
+ },
+ "theta_star": [
+  2.560293551305222,
+  -0.031607479904211644
+ ],
+ "f_star": 0.91615,
+ "f_theta0": 24.28856672014733,
+ "grad_norm_theta0": 93.32570736756342,
+ "grad_norm_at_theta_star": 1.1197487381764405e-15,
+ "dist_theta0_to_star": 1.4142118955342036,
+ "hessian_cond_exact": 100.0
+}

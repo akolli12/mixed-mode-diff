@@ -1,0 +1,19 @@
+{
+ "id": "bcd5276451",
+ "family": "quadratic",
+ "n": 2,
+ "seed": 3062346247,
+ "knobs": {
+  "kappa": 10
+ },
+ "theta_star": [
+  -2.815907359450121,
+  2.8977612211316943
+ ],
+ "f_star": 1.4654,
+ "f_theta0": 4.925311916408695,
+ "grad_norm_theta0": 8.426412032210283,
+ "grad_norm_at_theta_star": 7.411399888290274e-15,
+ "dist_theta0_to_star": 1.414214056210682,
+ "hessian_cond_exact": 10.0
+}
