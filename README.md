@@ -8,14 +8,16 @@ the step length relative to the best length along the same direction. Enzyme's o
 gradient descent runs from the same start for the same number of steps.
 
 ```
-data/<dataset>/problems/P<id>.jl   problem shown to the LLM and differentiated by Enzyme
-data/<dataset>/hidden/             answer key (θ*, f*, settings), used only for scoring
-julia/idea1/                       loading, Enzyme scoring, dataset checks, Python bridge
-python/idea1/                      TextGrad loop, sweep runner, summary
+data/<dataset>/problems/P<id>.jl    the code: shown to the LLM, differentiated by Enzyme
+data/<dataset>/constants/P<id>.jl   the numbers the code needs and THETA0; never shown to the LLM
+data/<dataset>/hidden/              answer key (θ*, f*, settings), used only for scoring
+julia/idea1/                        loading, Enzyme scoring, dataset checks, Python bridge
+python/idea1/                       TextGrad loop, sweep runner, summary
 ```
 
-A problem file is a `module` defining `loss(θ::AbstractVector)` and `THETA0`; see
-`julia/idea1/load_program.jl`.
+A problem file is a `module` defining `loss(θ::AbstractVector)`; it includes its constants
+file, which defines `THETA0`. The LLM sees the code but not the constants, so it can't read
+off the optimum and has to search for it. See `julia/idea1/load_program.jl`.
 
 ### Setup
 
@@ -39,12 +41,15 @@ and finite differences:
 julia --project=julia julia/idea1/check_dataset.jl data/idea1_testfns data/idea1_solvers
 ```
 
-Run TextGrad on some problems, then summarize (`--models mock` tests the pipeline for free):
+The full run plan (stages, who runs what, how results are recorded and combined) is in
+**[docs/idea1_runs.md](docs/idea1_runs.md)**; the stages themselves are defined in
+`python/idea1/plan.py`. Run a stage, then summarize (add `--mock` to test for free):
 
 ```
-python/.venv/bin/python python/idea1/run.py --programs data/idea1_testfns/problems/P7f72b5e797.jl \
-    --models kimi-k2.6:nothink --feedback loss history --steps 10 --name my-run
-python/.venv/bin/python python/idea1/summarize.py results/idea1/my-run
+python/.venv/bin/python python/idea1/plan.py                  # list the stages
+python/.venv/bin/python python/idea1/run.py --stage pilot
+python/.venv/bin/python python/idea1/summarize.py results/idea1/pilot
 ```
 
-`python python/idea1/run.py --help` lists every setting that can be swept.
+`run.py` also takes problems, models and feedback modes by hand; `run.py --help` lists
+every option.

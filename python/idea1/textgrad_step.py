@@ -78,13 +78,18 @@ def eval_instruction(source: str, loss: float, history: list, feedback: str) -> 
 
 def textgrad_step(engine, source: str, theta: list, loss: float, history: list, feedback: str) -> dict:
     """Runs one TextGrad update. Returns the proposed parameters (None if unparseable)
-    and every text the LLM produced along the way."""
+    and every text the LLM produced along the way.
+
+    error_kind is "format" when the LLM's answer could not be used (the LLM's failure,
+    part of the results) and "api" when the API call itself failed (not the LLM's
+    failure; the runner retries these)."""
     n = len(theta)
     p = tg.Variable(format_theta(theta), requires_grad=True, role_description=ROLE.format(n=n))
     loss_fn = tg.TextLoss(eval_instruction(source, loss, history, feedback), engine=engine)
     optimizer = tg.TextualGradientDescent(parameters=[p], engine=engine,
                                           constraints=[CONSTRAINT.format(n=n)])
-    out = {"theta_new": None, "evaluation": None, "gradient": None, "update": None, "error": None}
+    out = {"theta_new": None, "evaluation": None, "gradient": None, "update": None,
+           "error": None, "error_kind": None}
     try:
         evaluation = loss_fn(p)
         out["evaluation"] = evaluation.value
@@ -94,7 +99,9 @@ def textgrad_step(engine, source: str, theta: list, loss: float, history: list, 
         out["update"] = p.value
         out["theta_new"] = parse_theta(p.value, n)
         if out["theta_new"] is None:
-            out["error"] = "could not parse a list of the right length"
-    except Exception as e:  # API errors, or the model ignored the output tags
-        out["error"] = f"{type(e).__name__}: {e}"
+            out["error"], out["error_kind"] = "could not parse a list of the right length", "format"
+    except IndexError as e:  # TextGrad raises this when the answer lacks the <IMPROVED_VARIABLE> tags
+        out["error"], out["error_kind"] = f"IndexError: {e}", "format"
+    except Exception as e:   # rate limits, timeouts, connection errors
+        out["error"], out["error_kind"] = f"{type(e).__name__}: {e}", "api"
     return out

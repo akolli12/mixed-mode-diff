@@ -1,9 +1,9 @@
 # Loads one Idea 1 problem in the dataset format:
 #
-#   data/<dataset>/problems/P<id>.jl    module P<id> defining
-#                                         loss(θ::AbstractVector) -> Real   the number to minimize
-#                                         THETA0::Vector{Float64}           the starting parameters
-#                                       This file is exactly what the LLM is shown.
+#   data/<dataset>/problems/P<id>.jl    module P<id> defining loss(θ::AbstractVector) -> Real,
+#                                       the number to minimize. Shown to the LLM: code only.
+#   data/<dataset>/constants/P<id>.jl   the numbers the code needs, plus THETA0 (the starting
+#                                       parameters). Included by the problem file; never shown.
 #   data/<dataset>/hidden/P<id>.json    optional answer key (theta_star, f_star, family, knobs, ...)
 #                                       Used only for scoring, never shown to the LLM.
 

@@ -25,7 +25,7 @@ from litellm import completion
 from textgrad.engine_experimental.litellm import LiteLLMEngine
 
 KIMI_BASE_URL = "https://api.moonshot.ai/v1"
-REQUEST_TIMEOUT = 300  # seconds per API call; a stuck call fails the step instead of hanging
+REQUEST_TIMEOUT = 900  # seconds per API call; kimi-k3 can think for several minutes
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
