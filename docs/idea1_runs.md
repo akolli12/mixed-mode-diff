@@ -35,7 +35,7 @@ always current.
 | 0 | Enzyme timing (below) | Artemis | 330 | – | 0 | ~15 min | free | to do |
 | 1 | `pilot` | Artemis | 6 | 12 | 360 | 21 min | $1.98 | **done** |
 | 2 | `mainA-solvers` | Artemis | 20 | 40 | 1,200 | 70 min | $6.81 | **done** |
-| 3 | `mainA-testfns` | Alaina | 90 | 180 | 5,400 | ~5 h | ~$30–40 | to do |
+| 3 | `mainA-testfns` | Alaina | 90 | 180 | 5,400 | ~5 h | $29.00 | **done** |
 | 4 | `models-k26think` | Artemis | 20 | 20 | 600 | unknown: time it first (below) | ~$8–25 | to do |
 | 5 | `models-k3` | Alaina | 20 | 20 | 600 | unknown, likely 5–10 h: time it first | ~$50–140 | to do |
 | 6 | `samples` | Artemis | 20 | 20 | 1,800 | ~1.5 h | ~$10 | to do |
