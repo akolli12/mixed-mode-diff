@@ -13,7 +13,7 @@ consistency stage. Alaina runs the three largest stages: the test-function sweep
 | Problem family | quadratic, logcosh, rosenbrock, logistic; Richardson, Chebyshev, SOR solvers | the datasets |
 | Dimension n | 1 to 100 | the datasets |
 | Conditioning | κ 1 to 10⁴ (test functions), contrast 1 to ~400 (solvers) | the datasets |
-| Model | `kimi-k2.6:nothink`, `kimi-k2.6` (thinking), `kimi-k3` | the plan |
+| Model | `kimi-k2.6:nothink`, `kimi-k2.6:think`, `kimi-k3` (thinking is its default) | the plan |
 | Feedback to the LLM | `loss` (current loss only) or `history` (every earlier θ and loss) | the plan |
 
 The LLM always sees the problem's code, never its constants or the answer key. Every run

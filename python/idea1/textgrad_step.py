@@ -17,9 +17,12 @@ import re
 
 import textgrad as tg
 
+from llm import NoAnswerError
+
 # What the LLM is told between updates (the "feedback" sweep setting):
 #   "loss":    the current output only
-#   "history": also every earlier θ and its loss in this run (last HISTORY_LEN of them)
+#   "history": also every earlier θ evaluated in this run and its loss (last HISTORY_LEN of
+#              them), including proposals where the program diverged
 FEEDBACK_MODES = ("loss", "history")
 HISTORY_LEN = 10
 
@@ -52,7 +55,7 @@ def format_theta(theta) -> str:
 
 
 def format_loss(x: float) -> str:
-    return f"{x:.6g}"
+    return f"{x:.6g}" if math.isfinite(x) else "not finite (the program diverged)"
 
 
 def parse_theta(text: str, n: int):
@@ -67,16 +70,17 @@ def parse_theta(text: str, n: int):
     return None
 
 
-def eval_instruction(source: str, loss: float, history: list, feedback: str) -> str:
+def eval_instruction(source: str, loss: float, past: list, feedback: str) -> str:
+    """past: earlier (θ, loss) evaluations in this run, oldest first, not including the current θ."""
     history_text = ""
-    if feedback == "history" and len(history) > 1:
-        rows = [f"  step {t}: θ = {format_theta(th)}, loss = {format_loss(f)}"
-                for t, (th, f) in list(enumerate(history))[:-1][-HISTORY_LEN:]]
+    if feedback == "history" and past:
+        rows = [f"  {t}: θ = {format_theta(th)}, loss = {format_loss(f)}"
+                for t, (th, f) in list(enumerate(past, 1))[-HISTORY_LEN:]]
         history_text = HISTORY_BLOCK.format(rows="\n".join(rows))
     return EVAL_INSTRUCTION.format(source=source.strip(), loss=format_loss(loss), history=history_text)
 
 
-def textgrad_step(engine, source: str, theta: list, loss: float, history: list, feedback: str) -> dict:
+def textgrad_step(engine, source: str, theta: list, loss: float, past: list, feedback: str) -> dict:
     """Runs one TextGrad update. Returns the proposed parameters (None if unparseable)
     and every text the LLM produced along the way.
 
@@ -85,7 +89,7 @@ def textgrad_step(engine, source: str, theta: list, loss: float, history: list, 
     failure; the runner retries these)."""
     n = len(theta)
     p = tg.Variable(format_theta(theta), requires_grad=True, role_description=ROLE.format(n=n))
-    loss_fn = tg.TextLoss(eval_instruction(source, loss, history, feedback), engine=engine)
+    loss_fn = tg.TextLoss(eval_instruction(source, loss, past, feedback), engine=engine)
     optimizer = tg.TextualGradientDescent(parameters=[p], engine=engine,
                                           constraints=[CONSTRAINT.format(n=n)])
     out = {"theta_new": None, "evaluation": None, "gradient": None, "update": None,
@@ -102,6 +106,8 @@ def textgrad_step(engine, source: str, theta: list, loss: float, history: list, 
             out["error"], out["error_kind"] = "could not parse a list of the right length", "format"
     except IndexError as e:  # TextGrad raises this when the answer lacks the <IMPROVED_VARIABLE> tags
         out["error"], out["error_kind"] = f"IndexError: {e}", "format"
+    except NoAnswerError as e:  # the model spent its whole output budget thinking
+        out["error"], out["error_kind"] = f"NoAnswerError: {e}", "format"
     except Exception as e:   # rate limits, timeouts, connection errors
         out["error"], out["error_kind"] = f"{type(e).__name__}: {e}", "api"
     return out

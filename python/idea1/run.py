@@ -28,6 +28,7 @@ from the start on the next launch; summarize.py ignores rows from unfinished att
 import argparse
 import itertools
 import json
+import math
 import subprocess
 import sys
 import threading
@@ -64,10 +65,10 @@ def git_info():
             "uncommitted_changes": bool(git("status", "--porcelain", "--", "data", "julia", "python"))}
 
 
-def propose(engine, oracle, theta, loss, history, feedback, label):
+def propose(engine, oracle, theta, loss, past, feedback, label):
     """One TextGrad proposal, retrying API errors. Raises if the API keeps failing."""
     for attempt in range(API_RETRIES + 1):
-        proposal = textgrad_step(engine, oracle.source, theta, loss, history, feedback)
+        proposal = textgrad_step(engine, oracle.source, theta, loss, past, feedback)
         if proposal["error_kind"] != "api":
             return proposal
         if attempt < API_RETRIES:
@@ -79,7 +80,7 @@ def propose(engine, oracle, theta, loss, history, feedback, label):
 def run_one(oracle, program, model, feedback, repeat, args, out_dir):
     engine = get_engine(model)
     theta, loss = list(oracle.theta0), oracle.loss0
-    history = [(theta, loss)]
+    past = []   # earlier (θ, loss) evaluations, shown to the LLM with history feedback
     settings = dict(program=program, model=model, feedback=feedback, repeat=repeat,
                     family=oracle.meta.get("family"), n=len(oracle.theta0),
                     knobs=json.dumps(oracle.meta.get("knobs"), sort_keys=True),
@@ -89,7 +90,7 @@ def run_one(oracle, program, model, feedback, repeat, args, out_dir):
         accepted = None
         for sample in range(args.samples):
             t0, tokens0 = time.time(), (engine.prompt_tokens, engine.completion_tokens)
-            proposal = propose(engine, oracle, theta, loss, history, feedback, label)
+            proposal = propose(engine, oracle, theta, loss, past, feedback, label)
             row = dict(settings, step=step, sample=sample, theta=theta,
                        seconds=round(time.time() - t0, 1),
                        prompt_tokens=engine.prompt_tokens - tokens0[0],
@@ -99,13 +100,18 @@ def run_one(oracle, program, model, feedback, repeat, args, out_dir):
             append(out_dir / "steps.jsonl", row)
             if sample == 0:
                 accepted = row
-        # Like TextGrad, keep the first proposal even if the loss went up.
-        # An unusable proposal leaves θ unchanged and counts as a failed step.
-        if accepted["theta_new"] is not None:
+        # Like TextGrad, keep the first proposal even if the loss went up. Exceptions:
+        # an unusable answer leaves θ unchanged (a failed step), and so does a θ where the
+        # program diverged, which the LLM then sees in its history as "not finite".
+        note = accepted["error"] or ""
+        if accepted.get("diverged"):
+            past.append((accepted["theta_new"], math.inf))
+            note = "proposal diverged; θ kept"
+        elif accepted["theta_new"] is not None:
+            past.append((theta, loss))
             theta, loss = accepted["theta_new"], accepted["loss_after"]
-            history.append((theta, loss))
         print(f"{label} step {step + 1}/{args.steps}: loss = {loss:.6g}"
-              + (f"  ({accepted['error']})" if accepted["error"] else ""), flush=True)
+              + (f"  ({note})" if note else ""), flush=True)
     append(out_dir / "runs.jsonl", dict(settings, key=run_key(program, model, feedback, repeat),
                                          final_loss=loss, llm_calls=engine.calls,
                                          prompt_tokens=engine.prompt_tokens,

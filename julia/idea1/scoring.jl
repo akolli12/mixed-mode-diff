@@ -10,7 +10,9 @@ function gradient(f, θ::Vector{Float64})
     return dθ
 end
 
-safe_loss(f, θ) = (v = f(θ); isfinite(v) ? v : Inf)
+# f(θ), or NaN where the program throws (e.g. a domain error at a wild θ).
+safe_eval(f, θ) = try f(θ) catch; NaN end
+safe_loss(f, θ) = (v = safe_eval(f, θ); isfinite(v) ? v : Inf)
 
 # Minimizes φ(α) = f(θ + α d) over α ≥ 0: a log-spaced grid, then golden-section refinement.
 # Returns 0 when no positive α beats staying put.
@@ -44,12 +46,14 @@ cosine(a, b) = (na = norm(a); nb = norm(b); na > 0 && nb > 0 ? dot(a, b) / (na *
 function score_step(f, θ::Vector{Float64}, θnew::Vector{Float64}; xstar=nothing, fstar=nothing)
     g = gradient(f, θ)
     d = θnew .- θ
-    f0, f1 = f(θ), f(θnew)
+    f0, f1 = f(θ), safe_eval(f, θnew)
     α = norm(d) > 0 ? best_alpha(f, θ, d) : NaN
     αsd = best_alpha(f, θ, -g)
     scores = Dict{String,Any}(
         "loss_before"     => f0,
         "loss_after"      => f1,
+        # The program blew up at θnew (loss infinite, NaN, or an error); not a descent.
+        "diverged"        => !isfinite(f1),
         "descent"         => f1 < f0,
         # Direction: cosine between the step and −∇f (1 = steepest descent, 0 = orthogonal, −1 = uphill).
         "cos_to_neg_grad" => cosine(d, -g),
@@ -59,9 +63,9 @@ function score_step(f, θ::Vector{Float64}, θnew::Vector{Float64}; xstar=nothin
         # 1 = perfect, 2 = twice too far, 0.5 = half as far. Infinite when no forward move helps.
         "best_alpha"      => α,
         "step_ratio"      => α > 0 ? 1 / α : Inf,
-        "loss_best_on_line" => isnan(α) ? f0 : f(θ .+ α .* d),
+        "loss_best_on_line" => isnan(α) ? f0 : safe_eval(f, θ .+ α .* d),
         # What an exact line search along −∇f would have reached from the same point.
-        "loss_steepest_descent" => f(θ .- αsd .* g),
+        "loss_steepest_descent" => safe_eval(f, θ .- αsd .* g),
     )
     if fstar !== nothing
         scores["gap_before"] = f0 - fstar        # how far above the optimal loss

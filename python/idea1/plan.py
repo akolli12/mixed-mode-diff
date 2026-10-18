@@ -82,7 +82,7 @@ STAGES = {
                            about="instance 1 of every solver setting"),
     "mainA-testfns": stage("Alaina", instances(TESTFNS, [0]), [NOTHINK], ["loss", "history"],
                            about="instance 1 of every test-function setting: the n and κ sweep"),
-    "models-k26think": stage("Artemis", MODEL_SUBSET, ["kimi-k2.6"], ["history"],
+    "models-k26think": stage("Artemis", MODEL_SUBSET, ["kimi-k2.6:think"], ["history"],
                              about="same model with thinking on"),
     "models-k3": stage("Alaina", MODEL_SUBSET, ["kimi-k3"], ["history"],
                        about="strongest model; slow, run --limit 1 first"),

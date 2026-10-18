@@ -57,15 +57,15 @@ def problem_label(family, n, knobs):
 
 def trajectories(steps, gd):
     """One row per run: settings plus the loss after each step (index 0 = THETA0).
-    A failed step leaves the loss unchanged; a diverged one is recorded as inf."""
+    A failed or diverged step leaves θ, and so the loss, unchanged."""
     rows = []
     for run_id, g in steps[steps["sample"] == 0].sort_values("step").groupby("run_id"):
         first = g.iloc[0]
         loss = gd.loc[first["program"], "losses"][0]
         losses = [loss]
         for _, r in g.iterrows():
-            if isinstance(r["theta_new"], list):
-                loss = r["loss_after"] if pd.notna(r["loss_after"]) else math.inf
+            if isinstance(r["theta_new"], list) and r.get("diverged") is not True:
+                loss = r["loss_after"]
             losses.append(loss)
         rows.append(dict(run_id=run_id, program=first["program"], family=first["family"],
                          n=first["n"], knobs=first["knobs"], model=first["model"],
