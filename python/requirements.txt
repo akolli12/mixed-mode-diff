@@ -1,3 +1,4 @@
 textgrad==0.1.8
 litellm==1.105.1
 pandas==3.0.6
+matplotlib==3.11.2

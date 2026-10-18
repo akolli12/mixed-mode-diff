@@ -130,11 +130,20 @@ afterwards from the saved runs, with no new API calls.
 
 ## When a stage finishes
 
-1. Look at the summary:
+1. Make the summary spreadsheets and plots (free, a few seconds):
    ```
    python/.venv/bin/python python/idea1/summarize.py results/idea1/mainA-testfns
+   python/.venv/bin/python python/idea1/plots.py results/idea1/mainA-testfns
    ```
-2. Commit and push the folder:
+   This adds to the stage folder:
+   - `summary.csv`: one row per problem setting, model and feedback mode, with the
+     direction, descent and step-size metrics and both final losses
+   - `steps.csv`: one row per TextGrad step with all of Enzyme's scores (the LLM's text
+     stays in `steps.jsonl`)
+   - `plots/`: loss vs. Enzyme gradient descent per problem (stages with up to 24
+     problems), the remaining gap to f* per family, and per-step direction, step size
+     and descent
+2. Commit and push the folder, CSVs and plots included:
    ```
    git add results/idea1/mainA-testfns
    git commit -m "Idea 1 results: mainA-testfns"
@@ -143,11 +152,14 @@ afterwards from the saved runs, with no new API calls.
 
 ## Combining everything
 
-`summarize.py` takes any number of folders and treats them as one dataset:
+`summarize.py` and `plots.py` take any number of folders and treat them as one dataset:
 
 ```
 python/.venv/bin/python python/idea1/summarize.py results/idea1/*
+python/.venv/bin/python python/idea1/plots.py results/idea1/*
 ```
 
 Every row records its own problem, model and settings, so stages run by different people
-on different machines combine directly.
+on different machines combine directly. The combined CSVs and plots go to
+`results/idea1/combined/`, which git ignores: either of us can regenerate them at any
+time, so they are never committed and never conflict.

@@ -12,7 +12,8 @@ data/<dataset>/problems/P<id>.jl    the code: shown to the LLM, differentiated b
 data/<dataset>/constants/P<id>.jl   the numbers the code needs and THETA0; never shown to the LLM
 data/<dataset>/hidden/              answer key (θ*, f*, settings), used only for scoring
 julia/idea1/                        loading, Enzyme scoring, dataset checks, Python bridge
-python/idea1/                       TextGrad loop, sweep runner, summary
+python/idea1/                       TextGrad loop, run plan and runner, summary and plots
+results/idea1/<stage>/              one folder per stage: raw results, CSVs and plots
 ```
 
 A problem file is a `module` defining `loss(θ::AbstractVector)`; it includes its constants
@@ -48,7 +49,8 @@ The full run plan (stages, who runs what, how results are recorded and combined)
 ```
 python/.venv/bin/python python/idea1/plan.py                  # list the stages
 python/.venv/bin/python python/idea1/run.py --stage pilot
-python/.venv/bin/python python/idea1/summarize.py results/idea1/pilot
+python/.venv/bin/python python/idea1/summarize.py results/idea1/pilot   # table + CSVs
+python/.venv/bin/python python/idea1/plots.py results/idea1/pilot       # PNGs in pilot/plots/
 ```
 
 `run.py` also takes problems, models and feedback modes by hand; `run.py --help` lists
