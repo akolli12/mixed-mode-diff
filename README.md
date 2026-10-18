@@ -54,4 +54,5 @@ python/.venv/bin/python python/idea1/plots.py results/idea1/pilot       # PNGs i
 ```
 
 `run.py` also takes problems, models and feedback modes by hand; `run.py --help` lists
-every option.
+every option. `julia/idea1/time_enzyme.jl` times Enzyme on every problem for the speed
+comparison (free; see the guide).

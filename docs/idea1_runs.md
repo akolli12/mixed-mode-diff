@@ -2,9 +2,9 @@
 
 This is the run plan for Idea 1: TextGrad updates the parameters θ of each problem in
 `data/`, and every update is scored against Enzyme's exact gradient. Artemis runs the
-pilot, all the solver stages, the thinking-model comparison for `kimi-k2.6` and the
-consistency stage. Alaina runs the three largest stages: the test-function sweeps and
-`kimi-k3`.
+pilot, all the solver stages, the thinking-model comparison for `kimi-k2.6`, the
+consistency and 30-step stages, and the Enzyme timing. Alaina runs the three largest
+stages: the test-function sweeps and `kimi-k3`.
 
 ## What is being varied
 
@@ -17,8 +17,10 @@ consistency stage. Alaina runs the three largest stages: the test-function sweep
 | Feedback to the LLM | `loss` (current loss only) or `history` (every earlier θ and loss) | the plan |
 
 The LLM always sees the problem's code, never its constants or the answer key. Every run
-takes 10 TextGrad steps (3 LLM calls each). Enzyme gradient descent from the same start
-is recorded for every problem.
+takes 10 TextGrad steps (3 LLM calls each), except the `long` stage, which takes 30. The
+LLM is never told how many steps it has, so results after fewer steps are simply the first
+steps of a run: budgets from 1 to 10 need no separate runs. Enzyme gradient descent from
+the same start, for the same number of steps, is recorded for every problem.
 
 Each dataset setting has 3 random instances. Stages "A" use instance 1 of every setting;
 stages "B" add instances 2 and 3, which gives error bars.
@@ -28,30 +30,46 @@ stages "B" add instances 2 and 3, which gives error bars.
 `python/.venv/bin/python python/idea1/plan.py` prints this table from the code, so it is
 always current.
 
-| Order | Stage | Who | Problems | Runs | LLM calls | Rough time (4 workers) |
-|---|---|---|---|---|---|---|
-| 1 | `pilot` | Artemis | 6 | 12 | 360 | 15 min |
-| 2 | `mainA-solvers` | Artemis | 20 | 40 | 1,200 | 45 min |
-| 3 | `mainA-testfns` | Alaina | 90 | 180 | 5,400 | 4 h |
-| 4 | `models-k26think` | Artemis | 20 | 20 | 600 | unknown: time it first (below) |
-| 5 | `models-k3` | Alaina | 20 | 20 | 600 | unknown, likely 5–10 h: time it first |
-| 6 | `samples` | Artemis | 20 | 20 | 1,800 | 1 h |
-| 7 | `mainB-solvers` | Artemis | 40 | 80 | 2,400 | 1.5 h |
-| 8 | `mainB-testfns` | Alaina | 180 | 360 | 10,800 | 8 h |
+| Order | Stage | Who | Problems | Runs | LLM calls | Time (4 workers) | Cost | Status |
+|---|---|---|---|---|---|---|---|---|
+| 0 | Enzyme timing (below) | Artemis | 330 | – | 0 | ~15 min | free | to do |
+| 1 | `pilot` | Artemis | 6 | 12 | 360 | 21 min | $1.98 | **done** |
+| 2 | `mainA-solvers` | Artemis | 20 | 40 | 1,200 | 70 min | $6.81 | **done** |
+| 3 | `mainA-testfns` | Alaina | 90 | 180 | 5,400 | ~5 h | ~$30–40 | to do |
+| 4 | `models-k26think` | Artemis | 20 | 20 | 600 | unknown: time it first (below) | ~$8–25 | to do |
+| 5 | `models-k3` | Alaina | 20 | 20 | 600 | unknown, likely 5–10 h: time it first | ~$50–140 | to do |
+| 6 | `samples` | Artemis | 20 | 20 | 1,800 | ~1.5 h | ~$10 | to do |
+| 7 | `long` | Artemis | 20 | 20 | 1,800 | ~1.5 h | ~$10–15 | to do |
+| 8 | `mainB-solvers` | Artemis | 40 | 80 | 2,400 | ~2.5 h | ~$14 | to do |
+| 9 | `mainB-testfns` | Alaina | 180 | 360 | 10,800 | ~10 h | ~$60–75 | to do |
 
-The order matters only within each person's list (and stage 3 waits for the pilot). We can
-run our stages at the same time.
+The order matters only within each person's list. We can run our stages at the same time.
 
 - **models-k26think and models-k3** run 20 problems spread across families, n and
   conditioning with history feedback. They are compared with the same 20 problems from
   `mainA` (which used `kimi-k2.6:nothink`).
 - **samples** draws 3 proposals at every state on those 20 problems, all scored, to
   measure how consistent the LLM's steps are.
-- Times assume about 20–30 s per step with `nothink`, from our first test. The large-n
-  problems and history feedback have longer prompts, so allow extra.
+- **long** runs the same 20 problems for 30 steps instead of 10, to see whether TextGrad
+  keeps improving or plateaus.
+- Times and costs come from the pilot and `mainA-solvers`: about 30 s per step and $0.17
+  per 10-step run with `nothink`. The large-n problems and history feedback have longer
+  prompts, so allow extra. The thinking models are the uncertain ones.
 
-**Wait for the pilot before starting stage 3.** Artemis will share its token counts so we
-can check the cost of the full plan against Moonshot's prices.
+## Enzyme timing (free, no API)
+
+For the speed and cost comparison with TextGrad. TextGrad's time per step is already
+recorded in every run (`seconds` in `steps.csv`); this measures Enzyme's side once for all
+330 problems, and also runs Enzyme gradient descent to convergence (up to 500 steps):
+
+```
+julia --project=julia julia/idea1/time_enzyme.jl data/idea1_testfns data/idea1_solvers
+```
+
+It writes `results/idea1/enzyme-timing/timing.jsonl`, one row per problem: Enzyme's
+one-time compile time, the time of one gradient, one loss evaluation and one
+gradient-descent step, the full gradient-descent loss curve, and the machine it ran on.
+Commit that folder like a stage. Rerun it if the datasets change.
 
 ## Setup (once)
 

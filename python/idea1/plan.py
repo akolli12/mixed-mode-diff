@@ -69,9 +69,9 @@ MODEL_SUBSET = (
 )
 
 
-def stage(owner, programs, models, feedback, samples=1, about=""):
+def stage(owner, programs, models, feedback, samples=1, steps=STEPS, about=""):
     return dict(owner=owner, programs=programs, models=models, feedback=feedback,
-                samples=samples, steps=STEPS, about=about)
+                samples=samples, steps=steps, about=about)
 
 
 # In the order they should be run.
@@ -88,6 +88,8 @@ STAGES = {
                        about="strongest model; slow, run --limit 1 first"),
     "samples": stage("Artemis", MODEL_SUBSET, [NOTHINK], ["history"], samples=3,
                      about="3 proposals per state: how consistent are the LLM's steps?"),
+    "long": stage("Artemis", MODEL_SUBSET, [NOTHINK], ["history"], steps=30,
+                  about="30 steps instead of 10: does TextGrad keep improving or plateau?"),
     "mainB-solvers": stage("Artemis", instances(SOLVERS, [1, 2]), [NOTHINK], ["loss", "history"],
                            about="instances 2-3 of every solver setting, for error bars"),
     "mainB-testfns": stage("Alaina", instances(TESTFNS, [1, 2]), [NOTHINK], ["loss", "history"],
