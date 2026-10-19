@@ -17,7 +17,8 @@ stages: the test-function sweeps and `kimi-k3`.
 | Feedback to the LLM | `loss` (current loss only) or `history` (every earlier θ and loss) | the plan |
 
 The LLM always sees the problem's code, never its constants or the answer key. Every run
-takes 10 TextGrad steps (3 LLM calls each), except the `long` stage, which takes 30. The
+takes 10 TextGrad steps (3 LLM calls each), except the `long` stage, which takes 30, and
+the two thinking-model stages, which take 5. The
 LLM is never told how many steps it has, so results after fewer steps are simply the first
 steps of a run: budgets from 1 to 10 need no separate runs. Enzyme gradient descent from
 the same start, for the same number of steps, is recorded for every problem.
@@ -36,8 +37,8 @@ always current.
 | 1 | `pilot` | Artemis | 6 | 12 | 360 | 21 min | $1.98 | **done** |
 | 2 | `mainA-solvers` | Artemis | 20 | 40 | 1,200 | 70 min | $6.81 | **done** |
 | 3 | `mainA-testfns` | Alaina | 90 | 180 | 5,400 | ~5 h | $29.00 | **done** |
-| 4 | `models-k26think` | Artemis | 20 | 20 | 600 | unknown: time it first (below) | ~$8–25 | to do |
-| 5 | `models-k3` | Alaina | 20 | 20 | 600 | unknown, likely 5–10 h: time it first | ~$50–140 | to do |
+| 4 | `models-k26think` | Artemis | 20 | 20 | 300 | ~5 h | ~$18–25 | to do |
+| 5 | `models-k3` | Alaina | 20 | 20 | 300 | ~10 h? time it first (below) | ~$70–90? | to do |
 | 6 | `samples` | Artemis | 20 | 20 | 1,800 | 70 min | $9.69 | **done** |
 | 7 | `long` | Artemis | 20 | 20 | 1,800 | 2 h | $10.04 | **done** |
 | 8 | `mainB-solvers` | Artemis | 40 | 80 | 2,400 | 3.5 h | $13.71 | **done** |
@@ -46,15 +47,23 @@ always current.
 The order matters only within each person's list. We can run our stages at the same time.
 
 - **models-k26think and models-k3** run 20 problems spread across families, n and
-  conditioning with history feedback. They are compared with the same 20 problems from
-  `mainA` (which used `kimi-k2.6:nothink`).
+  conditioning with history feedback, for **5 steps** (changed from 10). They are compared
+  with the first 5 steps of the same 20 problems from `mainA` (which used
+  `kimi-k2.6:nothink`); since the LLM is never told its budget, those are directly
+  comparable. Why 5: one measured `kimi-k2.6:think` step took 699 s and 44.7k output
+  tokens ($0.18), about 20× a `nothink` step, so 10 steps would cost ~$40 for k2.6 and
+  likely ~$140+ for `kimi-k3`, whose output costs 3.75× more.
 - **samples** draws 3 proposals at every state on those 20 problems, all scored, to
   measure how consistent the LLM's steps are.
 - **long** runs the same 20 problems for 30 steps instead of 10, to see whether TextGrad
   keeps improving or plateaus.
-- Times and costs come from the pilot and `mainA-solvers`: about 30 s per step and $0.17
-  per 10-step run with `nothink`. The large-n problems and history feedback have longer
-  prompts, so allow extra. The thinking models are the uncertain ones.
+- Times and costs for `nothink` stages come from finished stages: about 30 s per step and
+  $0.16–0.17 per 10-step run. The large-n problems and history feedback have longer
+  prompts, so allow extra.
+- For `models-k26think`: ~12 min and ~$0.18 per step measured, so ~1 h and ~$0.90 per
+  5-step run; larger-n problems likely cost somewhat more. For `models-k3` the numbers
+  are a guess assuming it thinks as much as k2.6 (about $0.70 per step at k3's prices,
+  probably slower); its `--limit 1` run will tell.
 
 ## Enzyme timing (free, no API)
 
@@ -128,8 +137,8 @@ sure the machine won't sleep.
   python/.venv/bin/python python/idea1/run.py --stage models-k3 --limit 1
   python/.venv/bin/python python/idea1/run.py --stage models-k3
   ```
-  If one `kimi-k3` run takes much more than 2 hours, check with each other before running
-  the rest.
+  If one 5-step `kimi-k3` run costs much more than ~$5 or takes much more than ~3 hours,
+  check with each other before running the rest.
 
 ## What gets recorded
 

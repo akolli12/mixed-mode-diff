@@ -17,6 +17,7 @@ TESTFNS = ("quadratic", "logcosh", "rosenbrock", "logistic")
 SOLVERS = ("solver_richardson", "solver_chebyshev", "solver_sor")
 NOTHINK = "kimi-k2.6:nothink"
 STEPS = 10
+THINKING_STEPS = 5
 CALLS_PER_STEP = 3
 
 
@@ -82,9 +83,12 @@ STAGES = {
                            about="instance 1 of every solver setting"),
     "mainA-testfns": stage("Alaina", instances(TESTFNS, [0]), [NOTHINK], ["loss", "history"],
                            about="instance 1 of every test-function setting: the n and κ sweep"),
+    # Thinking models get 5 steps: a thinking step costs ~20x a nothink step (measured: 699 s
+    # and 44.7k output tokens for one kimi-k2.6:think step). They are compared with the first
+    # 5 steps of the nothink runs on the same problems; the LLM is never told its budget.
     "models-k26think": stage("Artemis", MODEL_SUBSET, ["kimi-k2.6:think"], ["history"],
-                             about="same model with thinking on"),
-    "models-k3": stage("Alaina", MODEL_SUBSET, ["kimi-k3"], ["history"],
+                             steps=THINKING_STEPS, about="same model with thinking on"),
+    "models-k3": stage("Alaina", MODEL_SUBSET, ["kimi-k3"], ["history"], steps=THINKING_STEPS,
                        about="strongest model; slow, run --limit 1 first"),
     "samples": stage("Artemis", MODEL_SUBSET, [NOTHINK], ["history"], samples=3,
                      about="3 proposals per state: how consistent are the LLM's steps?"),
