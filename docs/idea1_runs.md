@@ -37,7 +37,7 @@ always current.
 | 1 | `pilot` | Artemis | 6 | 12 | 360 | 21 min | $1.98 | **done** |
 | 2 | `mainA-solvers` | Artemis | 20 | 40 | 1,200 | 70 min | $6.81 | **done** |
 | 3 | `mainA-testfns` | Alaina | 90 | 180 | 5,400 | ~5 h | $29.00 | **done** |
-| 4 | `models-k26think` | Artemis | 20 | 20 | 300 | ~5 h | ~$18–25 | to do |
+| 4 | `models-k26think` | Artemis | 20 | 20 | 300 | 3 h | $14.26 | **done** |
 | 5 | `models-k3` | Alaina | 20 | 20 | 300 | ~10 h? time it first (below) | ~$70–90? | to do |
 | 6 | `samples` | Artemis | 20 | 20 | 1,800 | 70 min | $9.69 | **done** |
 | 7 | `long` | Artemis | 20 | 20 | 1,800 | 2 h | $10.04 | **done** |
@@ -60,10 +60,15 @@ The order matters only within each person's list. We can run our stages at the s
 - Times and costs for `nothink` stages come from finished stages: about 30 s per step and
   $0.16–0.17 per 10-step run. The large-n problems and history feedback have longer
   prompts, so allow extra.
-- For `models-k26think`: ~12 min and ~$0.18 per step measured, so ~1 h and ~$0.90 per
-  5-step run; larger-n problems likely cost somewhat more. For `models-k3` the numbers
-  are a guess assuming it thinks as much as k2.6 (about $0.70 per step at k3's prices,
-  probably slower); its `--limit 1` run will tell.
+- `models-k26think` (done) averaged ~7 min, ~34k output tokens and ~$0.14 per step. For
+  `models-k3` the numbers are a guess assuming it thinks about as much (about $0.55 per
+  step at k3's prices, probably slower); its `--limit 1` run will tell.
+- **Empty answers with thinking models.** In `models-k26think`, 6 of 100 steps (all on
+  logcosh problems) ended with an empty answer: the model used the API's default output
+  limit thinking during the update call and never wrote θ. These are recorded as the
+  LLM failing the step (`NoAnswerError`, error_kind `format`), not retried, and the run
+  continues. We kept the API defaults for every model so the comparison is fair, so
+  expect the same with `kimi-k3`; no action needed.
 
 ## Enzyme timing (free, no API)
 

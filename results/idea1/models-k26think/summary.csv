@@ -1,0 +1,21 @@
+family,n,knobs,model,feedback,runs,failed,cos_mean,cos_pos,descent,ratio_med,overshoot,final_loss,gd_final
+logcosh,5,"{""kappa"": 1000}",kimi-k2.6:think,history,1,0.4,0.1232,0.6667,0.6666666666666666,1.0708,0.6667,2073.2202,236.3419
+logcosh,5,"{""kappa"": 10}",kimi-k2.6:think,history,1,0.0,0.3145,0.8,0.6,0.9742,0.6,24.5925,6.9069
+logcosh,20,"{""kappa"": 1000}",kimi-k2.6:think,history,1,0.4,0.2596,0.6667,0.6666666666666666,1.0475,0.6667,1641.6288,159.2056
+logcosh,20,"{""kappa"": 10}",kimi-k2.6:think,history,1,0.4,0.35,0.6667,0.6666666666666666,1.0066,0.6667,96.5938,16.0437
+logistic,5,"{""lam"": 0.01, ""spread"": 100}",kimi-k2.6:think,history,1,0.0,0.339,0.8,0.4,7.3955,1.0,-0.6223,-2.6028
+logistic,5,"{""lam"": 0.01, ""spread"": 1}",kimi-k2.6:think,history,1,0.0,0.5628,1.0,1.0,0.0521,0.0,-2.0272,-3.9846
+logistic,20,"{""lam"": 0.01, ""spread"": 100}",kimi-k2.6:think,history,1,0.0,0.121,0.6,0.6,0.9851,0.6,2.3765,2.207
+logistic,20,"{""lam"": 0.01, ""spread"": 1}",kimi-k2.6:think,history,1,0.0,0.1503,1.0,0.8,0.3815,0.4,-2.8072,-3.2472
+quadratic,2,"{""kappa"": 1000}",kimi-k2.6:think,history,1,0.0,0.2946,0.4,0.2,7.0756,1.0,11.9745,5.3279
+quadratic,2,"{""kappa"": 10}",kimi-k2.6:think,history,1,0.0,0.5114,0.6,0.6,0.1153,0.6,-1.479,-4.4081
+quadratic,10,"{""kappa"": 1000}",kimi-k2.6:think,history,1,0.0,0.8394,0.8,0.4,2.1079,0.8,138.0837,22.242
+quadratic,10,"{""kappa"": 10}",kimi-k2.6:think,history,1,0.0,0.2811,0.6,0.4,1.3724,0.8,35.6419,-1.7836
+quadratic,50,"{""kappa"": 1000}",kimi-k2.6:think,history,1,0.0,0.2872,0.6,0.4,1.314,0.8,2396.4054,373.6586
+quadratic,50,"{""kappa"": 10}",kimi-k2.6:think,history,1,0.0,0.3905,0.6,0.4,1.3939,1.0,57.6693,12.2263
+rosenbrock,2,"{""b"": 100}",kimi-k2.6:think,history,1,0.0,0.7346,1.0,0.8,0.2392,0.4,14.3601,0.1415
+rosenbrock,2,"{""b"": 10}",kimi-k2.6:think,history,1,0.0,0.8519,1.0,0.8,1.2689,0.6,0.3018,0.3423
+rosenbrock,10,"{""b"": 100}",kimi-k2.6:think,history,1,0.0,0.4408,0.6,0.4,1.2155,0.8,551.3992,10.0742
+rosenbrock,10,"{""b"": 10}",kimi-k2.6:think,history,1,0.0,0.31,1.0,0.6,1.1921,0.6,163.1215,12.2455
+solver_richardson,8,"{""amp"": 0.0, ""contrast"": 1.0}",kimi-k2.6:think,history,1,0.0,0.1708,1.0,0.6,1.5611,0.8,-0.3431,-0.1663
+solver_richardson,8,"{""amp"": 3.0, ""contrast"": 403.4287934927351}",kimi-k2.6:think,history,1,0.0,0.5757,0.8,0.4,1.9255,1.0,-0.0276,-0.0423
