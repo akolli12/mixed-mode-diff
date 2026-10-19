@@ -40,7 +40,7 @@ always current.
 | 5 | `models-k3` | Alaina | 20 | 20 | 600 | unknown, likely 5–10 h: time it first | ~$50–140 | to do |
 | 6 | `samples` | Artemis | 20 | 20 | 1,800 | 70 min | $9.69 | **done** |
 | 7 | `long` | Artemis | 20 | 20 | 1,800 | ~1.5 h | ~$10–15 | to do |
-| 8 | `mainB-solvers` | Artemis | 40 | 80 | 2,400 | ~2.5 h | ~$14 | to do |
+| 8 | `mainB-solvers` | Artemis | 40 | 80 | 2,400 | 3.5 h | $13.71 | **done** |
 | 9 | `mainB-testfns` | Alaina | 180 | 360 | 10,800 | ~10 h | ~$60–75 | to do |
 
 The order matters only within each person's list. We can run our stages at the same time.

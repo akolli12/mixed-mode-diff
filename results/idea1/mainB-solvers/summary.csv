@@ -1,0 +1,41 @@
+family,n,knobs,model,feedback,runs,failed,cos_mean,cos_pos,descent,ratio_med,overshoot,final_loss,gd_final
+solver_chebyshev,2,"{""amp"": 0.0, ""contrast"": 1.0, ""m"": 30}",kimi-k2.6:nothink,history,2,0.0,0.1569,0.75,0.6,1.2948,0.7,-1.728,-2.0525
+solver_chebyshev,2,"{""amp"": 0.0, ""contrast"": 1.0, ""m"": 30}",kimi-k2.6:nothink,loss,2,0.0,0.1173,0.7,0.45,1.0313,0.75,-0.2494,-2.0525
+solver_chebyshev,2,"{""amp"": 1.0, ""contrast"": 7.38905609893065, ""m"": 30}",kimi-k2.6:nothink,history,2,0.0,0.0798,0.5,0.6,1.0094,0.7,-0.5507,-1.447
+solver_chebyshev,2,"{""amp"": 1.0, ""contrast"": 7.38905609893065, ""m"": 30}",kimi-k2.6:nothink,loss,2,0.0,0.2285,0.85,0.5,1.3489,0.8,-0.2593,-1.447
+solver_chebyshev,2,"{""amp"": 2.0, ""contrast"": 54.598150033144236, ""m"": 30}",kimi-k2.6:nothink,history,2,0.0,0.0922,0.75,0.55,1.0802,0.65,-0.2754,-0.7304
+solver_chebyshev,2,"{""amp"": 2.0, ""contrast"": 54.598150033144236, ""m"": 30}",kimi-k2.6:nothink,loss,2,0.0,0.1377,0.85,0.45,1.0507,0.65,33.8064,-0.7304
+solver_chebyshev,2,"{""amp"": 3.0, ""contrast"": 403.4287934927351, ""m"": 30}",kimi-k2.6:nothink,history,2,0.0,0.0938,0.65,0.6,0.985,0.55,-0.29,-0.4432
+solver_chebyshev,2,"{""amp"": 3.0, ""contrast"": 403.4287934927351, ""m"": 30}",kimi-k2.6:nothink,loss,2,0.0,0.0642,0.65,0.45,0.9999,0.55,-0.1047,-0.4432
+solver_richardson,4,"{""amp"": 0.0, ""contrast"": 1.0}",kimi-k2.6:nothink,history,2,0.0,0.2515,0.85,0.75,0.3743,0.35,-0.1206,-0.1279
+solver_richardson,4,"{""amp"": 0.0, ""contrast"": 1.0}",kimi-k2.6:nothink,loss,2,0.0,0.3282,0.75,0.55,1.2783,0.7,-0.0858,-0.1279
+solver_richardson,4,"{""amp"": 1.0, ""contrast"": 7.38905609893065}",kimi-k2.6:nothink,history,2,0.0,0.2929,0.8,0.7,0.5645,0.45,-0.104,-0.0912
+solver_richardson,4,"{""amp"": 1.0, ""contrast"": 7.38905609893065}",kimi-k2.6:nothink,loss,2,0.0,0.4283,0.75,0.5,1.658,0.7,0.0764,-0.0912
+solver_richardson,4,"{""amp"": 2.0, ""contrast"": 54.598150033144236}",kimi-k2.6:nothink,history,2,0.0,0.2,0.7,0.7,0.3344,0.2,0.0037,-0.0442
+solver_richardson,4,"{""amp"": 2.0, ""contrast"": 54.598150033144236}",kimi-k2.6:nothink,loss,2,0.0,0.4051,0.75,0.5,1.2513,0.9,1.108,-0.0442
+solver_richardson,4,"{""amp"": 3.0, ""contrast"": 403.4287934927351}",kimi-k2.6:nothink,history,2,0.0,0.3208,0.8,0.75,0.1297,0.3,-0.0192,-0.034
+solver_richardson,4,"{""amp"": 3.0, ""contrast"": 403.4287934927351}",kimi-k2.6:nothink,loss,2,0.0,0.3174,0.8,0.5,1.1734,0.7,1.4194,-0.034
+solver_richardson,8,"{""amp"": 0.0, ""contrast"": 1.0}",kimi-k2.6:nothink,history,2,0.0,0.1238,0.65,0.6,0.3123,0.4,-0.0966,-0.1559
+solver_richardson,8,"{""amp"": 0.0, ""contrast"": 1.0}",kimi-k2.6:nothink,loss,2,0.0,0.375,0.7,0.55,1.1965,0.6,-0.132,-0.1559
+solver_richardson,8,"{""amp"": 1.0, ""contrast"": 7.38905609893065}",kimi-k2.6:nothink,history,2,0.0,0.1219,0.6,0.6,0.1656,0.45,-0.0647,-0.094
+solver_richardson,8,"{""amp"": 1.0, ""contrast"": 7.38905609893065}",kimi-k2.6:nothink,loss,2,0.0,0.2192,0.7,0.5,1.2203,0.8,0.0447,-0.094
+solver_richardson,8,"{""amp"": 2.0, ""contrast"": 54.598150033144236}",kimi-k2.6:nothink,history,2,0.0,0.1202,0.7,0.65,0.9846,0.55,-0.0872,-0.0635
+solver_richardson,8,"{""amp"": 2.0, ""contrast"": 54.598150033144236}",kimi-k2.6:nothink,loss,2,0.0,0.3392,0.75,0.45,1.2661,0.65,2.6797,-0.0635
+solver_richardson,8,"{""amp"": 3.0, ""contrast"": 403.4287934927351}",kimi-k2.6:nothink,history,2,0.0,0.5215,0.9,0.65,0.9592,0.45,-0.0291,-0.0458
+solver_richardson,8,"{""amp"": 3.0, ""contrast"": 403.4287934927351}",kimi-k2.6:nothink,loss,2,0.0,0.4848,0.85,0.5,1.5065,0.75,3.067,-0.0458
+solver_richardson,16,"{""amp"": 0.0, ""contrast"": 1.0}",kimi-k2.6:nothink,history,2,0.0,0.2191,0.75,0.7,0.4363,0.4,-0.1826,-0.2248
+solver_richardson,16,"{""amp"": 0.0, ""contrast"": 1.0}",kimi-k2.6:nothink,loss,2,0.0,0.4658,0.85,0.55,2.0537,0.8,-0.0892,-0.2248
+solver_richardson,16,"{""amp"": 1.0, ""contrast"": 7.38905609893065}",kimi-k2.6:nothink,history,2,0.0,0.3236,0.8,0.55,1.0682,0.6,3.7034,-0.1429
+solver_richardson,16,"{""amp"": 1.0, ""contrast"": 7.38905609893065}",kimi-k2.6:nothink,loss,2,0.0,0.538,0.95,0.45,1.6293,0.9,9.5796,-0.1429
+solver_richardson,16,"{""amp"": 2.0, ""contrast"": 54.598150033144236}",kimi-k2.6:nothink,history,2,0.0,0.2467,0.85,0.7,0.9094,0.55,-0.0902,-0.0937
+solver_richardson,16,"{""amp"": 2.0, ""contrast"": 54.598150033144236}",kimi-k2.6:nothink,loss,2,0.0,0.6489,0.95,0.5,1.4753,0.9,0.8915,-0.0937
+solver_richardson,16,"{""amp"": 3.0, ""contrast"": 403.4287934927351}",kimi-k2.6:nothink,history,2,0.0,0.154,0.55,0.55,0.1265,0.35,-0.0504,-0.0692
+solver_richardson,16,"{""amp"": 3.0, ""contrast"": 403.4287934927351}",kimi-k2.6:nothink,loss,2,0.0,0.4292,0.85,0.5,1.3051,0.8,-0.015,-0.0692
+solver_sor,1,"{""amp"": 0.0, ""contrast"": 1.0, ""m"": 20}",kimi-k2.6:nothink,history,2,0.0,0.7,0.85,0.7,1.112,0.65,-1.55,-1.5795
+solver_sor,1,"{""amp"": 0.0, ""contrast"": 1.0, ""m"": 20}",kimi-k2.6:nothink,loss,2,0.0,0.1,0.55,0.45,0.9911,0.65,-0.5012,-1.5795
+solver_sor,1,"{""amp"": 1.0, ""contrast"": 7.38905609893065, ""m"": 20}",kimi-k2.6:nothink,history,2,0.0,0.7,0.85,0.65,1.2477,0.65,-1.5507,-1.567
+solver_sor,1,"{""amp"": 1.0, ""contrast"": 7.38905609893065, ""m"": 20}",kimi-k2.6:nothink,loss,2,0.0,0.4,0.7,0.45,1.3779,0.75,-0.3974,-1.567
+solver_sor,1,"{""amp"": 2.0, ""contrast"": 54.598150033144236, ""m"": 20}",kimi-k2.6:nothink,history,2,0.0,0.5,0.75,0.75,0.7785,0.55,-0.9649,-0.968
+solver_sor,1,"{""amp"": 2.0, ""contrast"": 54.598150033144236, ""m"": 20}",kimi-k2.6:nothink,loss,2,0.0,0.4,0.7,0.5,0.9053,0.55,-0.5771,-0.968
+solver_sor,1,"{""amp"": 3.0, ""contrast"": 403.4287934927351, ""m"": 20}",kimi-k2.6:nothink,history,2,0.0,0.7,0.85,0.65,1.1362,0.6,-0.4274,-0.4487
+solver_sor,1,"{""amp"": 3.0, ""contrast"": 403.4287934927351, ""m"": 20}",kimi-k2.6:nothink,loss,2,0.0,0.2,0.6,0.5,0.9627,0.7,-0.0975,-0.4487
