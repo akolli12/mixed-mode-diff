@@ -1,0 +1,21 @@
+family,n,knobs,model,feedback,runs,failed,cos_mean,cos_pos,descent,ratio_med,overshoot,final_loss,gd_final
+logcosh,5,"{""kappa"": 1000}",kimi-k2.6:nothink,history,1,0.0,0.2009,0.7,0.6,0.8458,0.6,422.5679,105.0997
+logcosh,5,"{""kappa"": 10}",kimi-k2.6:nothink,history,1,0.0,0.2729,0.7333,0.6667,0.4768,0.4,9.5518,4.4355
+logcosh,20,"{""kappa"": 1000}",kimi-k2.6:nothink,history,1,0.0,0.1193,0.7667,0.6333,0.5539,0.5333,1465.3778,79.1253
+logcosh,20,"{""kappa"": 10}",kimi-k2.6:nothink,history,1,0.0,0.1064,0.6,0.5333,0.6968,0.5667,81.441,-0.1598
+logistic,5,"{""lam"": 0.01, ""spread"": 100}",kimi-k2.6:nothink,history,1,0.0,0.2417,0.7333,0.5,1.013,0.7,-1.9877,-2.9493
+logistic,5,"{""lam"": 0.01, ""spread"": 1}",kimi-k2.6:nothink,history,1,0.0,0.159,0.7,0.7,0.0832,0.3,-3.2313,-3.9876
+logistic,20,"{""lam"": 0.01, ""spread"": 100}",kimi-k2.6:nothink,history,1,0.0,0.1513,0.6333,0.5,0.9948,0.6,2.9021,2.1659
+logistic,20,"{""lam"": 0.01, ""spread"": 1}",kimi-k2.6:nothink,history,1,0.0,0.0887,0.7,0.6,0.8395,0.5333,-2.9827,-3.297
+quadratic,2,"{""kappa"": 1000}",kimi-k2.6:nothink,history,1,0.0,0.439,0.8333,0.4667,1.1802,0.7667,5.0892,5.2817
+quadratic,2,"{""kappa"": 10}",kimi-k2.6:nothink,history,1,0.0,0.4228,0.7667,0.7333,0.3214,0.4,-2.333,-4.933
+quadratic,10,"{""kappa"": 1000}",kimi-k2.6:nothink,history,1,0.0,0.3558,0.8,0.7667,0.0269,0.2667,329.0595,4.4165
+quadratic,10,"{""kappa"": 10}",kimi-k2.6:nothink,history,1,0.0,0.2116,0.7,0.5333,0.9579,0.6333,24.4877,-2.0727
+quadratic,50,"{""kappa"": 1000}",kimi-k2.6:nothink,history,1,0.0,0.2149,0.6667,0.5333,0.9543,0.6333,2945.1087,47.7638
+quadratic,50,"{""kappa"": 10}",kimi-k2.6:nothink,history,1,0.0,0.3351,0.8333,0.5333,1.1968,0.7667,59.6031,-1.5056
+rosenbrock,2,"{""b"": 100}",kimi-k2.6:nothink,history,1,0.0,0.4599,0.9,0.7333,0.7437,0.5,0.7732,-0.1884
+rosenbrock,2,"{""b"": 10}",kimi-k2.6:nothink,history,1,0.0,0.461,0.8333,0.6333,0.9988,0.5667,1.4518,-0.3468
+rosenbrock,10,"{""b"": 100}",kimi-k2.6:nothink,history,1,0.0,0.4065,0.7667,0.4667,1.2156,0.8667,23299.5104,7.6104
+rosenbrock,10,"{""b"": 10}",kimi-k2.6:nothink,history,1,0.0,0.2076,0.6333,0.5,0.8599,0.6333,168.598,0.4134
+solver_richardson,8,"{""amp"": 0.0, ""contrast"": 1.0}",kimi-k2.6:nothink,history,1,0.0,0.0611,0.6667,0.5667,0.9724,0.5667,-0.254,-0.1663
+solver_richardson,8,"{""amp"": 3.0, ""contrast"": 403.4287934927351}",kimi-k2.6:nothink,history,1,0.0,0.4339,0.8333,0.5667,1.1108,0.8,-0.0593,-0.0423

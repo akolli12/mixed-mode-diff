@@ -39,7 +39,7 @@ always current.
 | 4 | `models-k26think` | Artemis | 20 | 20 | 600 | unknown: time it first (below) | ~$8–25 | to do |
 | 5 | `models-k3` | Alaina | 20 | 20 | 600 | unknown, likely 5–10 h: time it first | ~$50–140 | to do |
 | 6 | `samples` | Artemis | 20 | 20 | 1,800 | 70 min | $9.69 | **done** |
-| 7 | `long` | Artemis | 20 | 20 | 1,800 | ~1.5 h | ~$10–15 | to do |
+| 7 | `long` | Artemis | 20 | 20 | 1,800 | 2 h | $10.04 | **done** |
 | 8 | `mainB-solvers` | Artemis | 40 | 80 | 2,400 | 3.5 h | $13.71 | **done** |
 | 9 | `mainB-testfns` | Alaina | 180 | 360 | 10,800 | ~10 h | ~$60–75 | to do |
 
