@@ -3,7 +3,8 @@
     python/.venv/bin/python python/idea1/plots.py results/idea1/pilot
     python/.venv/bin/python python/idea1/plots.py results/idea1/*        # everything
 
-Writes PNGs to <folder>/plots/ (or results/idea1/combined/plots/ for several folders):
+Writes PNGs to <folder>/plots/ (or results/idea1/combined/plots/ for several folders), one
+set per optimizer and model (<model> is prefixed with "direct-" or "opro-" for those methods):
     loss_curves_<model>.png    per problem: loss − f* after each step, TextGrad (one line per
                                feedback mode) vs Enzyme gradient descent. Only for ≤ 24 problems.
     gap_by_family_<model>.png  per family: median fraction of the starting gap to f* that
@@ -68,7 +69,7 @@ def trajectories(steps, gd):
                 loss = r["loss_after"]
             losses.append(loss)
         rows.append(dict(run_id=run_id, program=first["program"], family=first["family"],
-                         n=first["n"], knobs=first["knobs"], model=first["model"],
+                         n=first["n"], knobs=first["knobs"], model=first["model"], spec=first["spec"],
                          feedback=first["feedback"], losses=losses))
     return pd.DataFrame(rows)
 
@@ -79,8 +80,13 @@ def gap(losses, f_star):
     return np.maximum(g, GAP_FLOOR)
 
 
-def legend(fig, feedbacks):
-    handles = [plt.Line2D([], [], color=FEEDBACK_COLOR[f], label=f"TextGrad, {f} feedback")
+def optimizer_name(spec):
+    method = spec.split("/")[0] if "/" in spec else "textgrad"
+    return {"textgrad": "TextGrad", "direct": "Direct prompting", "opro": "OPRO"}[method]
+
+
+def legend(fig, feedbacks, spec):
+    handles = [plt.Line2D([], [], color=FEEDBACK_COLOR[f], label=f"{optimizer_name(spec)}, {f} feedback")
                for f in feedbacks]
     handles.append(plt.Line2D([], [], color=ENZYME_COLOR, linestyle="--", label="Enzyme gradient descent"))
     fig.legend(handles=handles, loc="upper center", ncol=len(handles), bbox_to_anchor=(0.5, 1.0))
@@ -96,7 +102,7 @@ def grid(n_panels, width=3.2, height=2.4, max_cols=4):
 
 
 def plot_loss_curves(traj, gd, model, out):
-    traj = traj[traj["model"] == model]
+    traj = traj[traj["spec"] == model]
     programs = traj.sort_values(["family", "n", "knobs"])["program"].unique()
     if len(programs) > MAX_PROBLEM_PANELS:
         return None
@@ -113,17 +119,17 @@ def plot_loss_curves(traj, gd, model, out):
         ax.set_yscale("log")
         ax.set_xlabel("step")
         ax.set_ylabel("loss − f*")
-    legend(fig, feedbacks)
+    legend(fig, feedbacks, model)
     fig.suptitle(f"Loss above the optimum after each step ({model})", y=1.04, fontsize=11, fontweight="bold")
     fig.tight_layout(rect=(0, 0, 1, 0.95))
-    path = out / f"loss_curves_{model.replace(':', '-')}.png"
+    path = out / f"loss_curves_{model.replace(':', '-').replace('/', '-')}.png"
     fig.savefig(path, dpi=160, bbox_inches="tight")
     plt.close(fig)
     return path
 
 
 def plot_gap_by_family(traj, gd, model, out):
-    traj = traj[traj["model"] == model]
+    traj = traj[traj["spec"] == model]
     families = sorted(traj["family"].unique())
     feedbacks = [f for f in FEEDBACK_COLOR if f in set(traj["feedback"])]
     fig, axes = grid(len(families))
@@ -142,18 +148,18 @@ def plot_gap_by_family(traj, gd, model, out):
         ax.set_yscale("log")
         ax.set_xlabel("step")
         ax.set_ylabel("gap / starting gap")
-    legend(fig, feedbacks)
+    legend(fig, feedbacks, model)
     fig.suptitle(f"Fraction of the starting gap to f* that remains (median, {model})",
                  y=1.04, fontsize=11, fontweight="bold")
     fig.tight_layout(rect=(0, 0, 1, 0.95))
-    path = out / f"gap_by_family_{model.replace(':', '-')}.png"
+    path = out / f"gap_by_family_{model.replace(':', '-').replace('/', '-')}.png"
     fig.savefig(path, dpi=160, bbox_inches="tight")
     plt.close(fig)
     return path
 
 
 def plot_step_metrics(steps, model, out):
-    ok = steps[(steps["model"] == model) & steps["theta_new"].map(lambda t: isinstance(t, list))].copy()
+    ok = steps[(steps["spec"] == model) & steps["theta_new"].map(lambda t: isinstance(t, list))].copy()
     ok["step1"] = ok["step"] + 1
     # A step with no useful length along its direction (uphill) is infinitely too long; cap for plotting.
     ok["ratio"] = ok["step_ratio"].astype(float).fillna(np.inf).clip(upper=RATIO_CAP)
@@ -185,12 +191,12 @@ def plot_step_metrics(steps, model, out):
         ax.set_title(title, loc="left")
         ax.set_xlabel("step")
         ax.set_ylabel(ylabel)
-    handles = [plt.Line2D([], [], color=FEEDBACK_COLOR[f], label=f"TextGrad, {f} feedback") for f in feedbacks]
+    handles = [plt.Line2D([], [], color=FEEDBACK_COLOR[f], label=f"{optimizer_name(model)}, {f} feedback") for f in feedbacks]
     fig.legend(handles=handles, loc="upper center", ncol=len(handles), bbox_to_anchor=(0.5, 1.02))
-    fig.suptitle(f"Every TextGrad step scored against Enzyme ({model}; median and middle 50%)",
+    fig.suptitle(f"Every {optimizer_name(model)} step scored against Enzyme ({model}; median and middle 50%)",
                  y=1.1, fontsize=11, fontweight="bold")
     fig.tight_layout()
-    path = out / f"step_metrics_{model.replace(':', '-')}.png"
+    path = out / f"step_metrics_{model.replace(':', '-').replace('/', '-')}.png"
     fig.savefig(path, dpi=160, bbox_inches="tight")
     plt.close(fig)
     return path
@@ -205,8 +211,10 @@ def main():
     runs, steps, gd = load(args.folders)
     out = (Path(args.out) if args.out else default_out(args.folders)) / "plots"
     out.mkdir(parents=True, exist_ok=True)
+    # One set of figures per optimizer and model; TextGrad results are named by model alone.
+    steps["spec"] = [m if meth == "textgrad" else f"{meth}/{m}" for meth, m in zip(steps["method"], steps["model"])]
     traj = trajectories(steps, gd)
-    for model in sorted(traj["model"].unique()):
+    for model in sorted(traj["spec"].unique()):
         for path in (plot_loss_curves(traj, gd, model, out),
                      plot_gap_by_family(traj, gd, model, out),
                      plot_step_metrics(steps, model, out)):

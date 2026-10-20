@@ -125,6 +125,11 @@ class MockEngine(LiteLLMEngine):
 
     def lite_llm_generate(self, content, system_prompt=None, **kwargs) -> str:
         self.calls += 1
+        if "end your answer with the new θ" in (system_prompt or ""):   # direct / OPRO prompts
+            current = re.search(r"\[[^\[\]]*\]", content)
+            theta = json.loads(current.group(0)) if current else []
+            new = [x + random.gauss(0.0, 0.05) for x in theta]
+            return "Mock reasoning.\n[" + ",".join(f"{x:.6g}" for x in new) + "]"
         if "IMPROVED_VARIABLE" not in (system_prompt or ""):
             return "Mock feedback: some parameters look too large; try changing them slightly."
         current = re.search(r"<VARIABLE>\s*(\[.*?\])\s*</VARIABLE>", content, re.S)

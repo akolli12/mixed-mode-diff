@@ -11,7 +11,7 @@ results/idea1/combined/ when given several folders, which git ignores; override 
 
 Only finished runs count; rows from attempts that were interrupted and redone are dropped.
 
-Per problem family x n x knobs (from the dataset's answer key) x model x feedback:
+Per problem family x n x knobs (from the dataset's answer key) x method x model x feedback:
     runs          finished runs
     failed        fraction of proposals the LLM got wrong (unparseable answer)
     cos_mean      mean cosine between the step and −∇f (1 = steepest descent, 0 = random)
@@ -29,7 +29,7 @@ from pathlib import Path
 
 import pandas as pd
 
-KEYS = ["family", "n", "knobs", "model", "feedback"]
+KEYS = ["family", "n", "knobs", "method", "model", "feedback"]
 TEXT_COLUMNS = ["evaluation", "gradient", "update"]
 
 
@@ -46,7 +46,9 @@ def load(folders):
     """(runs, steps, gd) for the given folders: finished runs only; gd indexed by program."""
     runs = read_jsonl(folders, "runs.jsonl")
     steps = read_jsonl(folders, "steps.jsonl")
-    steps = steps[steps["run_id"].isin(runs["run_id"])]
+    steps = steps[steps["run_id"].isin(runs["run_id"])].copy()
+    for df in (runs, steps):   # results from before --method existed are all TextGrad
+        df["method"] = df["method"].fillna("textgrad") if "method" in df else "textgrad"
     gd = read_jsonl(folders, "gd.jsonl").drop_duplicates("program").set_index("program")
     gd["f_star"] = gd["meta"].map(lambda m: (m or {}).get("f_star"))
     runs["gd_final"] = runs["program"].map(gd["losses"].str[-1])

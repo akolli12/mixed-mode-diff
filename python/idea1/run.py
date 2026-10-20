@@ -1,8 +1,10 @@
-"""Idea 1: run TextGrad on Julia problems and score every update against Enzyme.
+"""Idea 1: run an LLM optimizer on Julia problems and score every update against Enzyme.
 
-For each combination of problem x model x feedback x repeat, TextGrad takes --steps
+For each combination of problem x model x feedback x repeat, the LLM optimizer (--method:
+TextGrad by default, or direct prompting or OPRO, see other_methods.py) takes --steps
 updates from the problem's THETA0. Every update is scored by Enzyme at the point it was
-made. Enzyme's own gradient descent runs from the same THETA0 for the same number of steps.
+made; the LLM never sees Enzyme. Enzyme's own gradient descent runs from the same THETA0
+for the same number of steps.
 
 Run a stage of the plan (see plan.py) from the repo root:
 
@@ -40,8 +42,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from llm import get_engine  # noqa: E402
 from oracle import REPO_ROOT, JuliaOracle  # noqa: E402
+from other_methods import direct_step, opro_step  # noqa: E402
 from plan import STAGES  # noqa: E402
 from textgrad_step import FEEDBACK_MODES, textgrad_step  # noqa: E402
+
+# The LLM optimizer making each proposal (see textgrad_step.py and other_methods.py).
+METHODS = {"textgrad": textgrad_step, "direct": direct_step, "opro": opro_step}
 
 API_RETRIES = 5     # retries of one step after an API error before giving up on the run
 API_WAIT = 60       # seconds between those retries
@@ -54,8 +60,9 @@ def append(path: Path, row: dict):
         fh.write(json.dumps(row) + "\n")
 
 
-def run_key(program, model, feedback, repeat):
-    return f"{program}|{model}|{feedback}|{repeat}"
+def run_key(program, model, feedback, repeat, method="textgrad"):
+    key = f"{program}|{model}|{feedback}|{repeat}"
+    return key if method == "textgrad" else f"{key}|{method}"   # TextGrad keys predate --method
 
 
 def git_info():
@@ -65,10 +72,10 @@ def git_info():
             "uncommitted_changes": bool(git("status", "--porcelain", "--", "data", "julia", "python"))}
 
 
-def propose(engine, oracle, theta, loss, past, feedback, label):
-    """One TextGrad proposal, retrying API errors. Raises if the API keeps failing."""
+def propose(method, engine, oracle, theta, loss, past, feedback, label):
+    """One proposal from the given method, retrying API errors. Raises if the API keeps failing."""
     for attempt in range(API_RETRIES + 1):
-        proposal = textgrad_step(engine, oracle.source, theta, loss, past, feedback)
+        proposal = METHODS[method](engine, oracle.source, theta, loss, past, feedback)
         if proposal["error_kind"] != "api":
             return proposal
         if attempt < API_RETRIES:
@@ -78,19 +85,22 @@ def propose(engine, oracle, theta, loss, past, feedback, label):
 
 
 def run_one(oracle, program, model, feedback, repeat, args, out_dir):
+    method = args.method
     engine = get_engine(model)
     theta, loss = list(oracle.theta0), oracle.loss0
-    past = []   # earlier (θ, loss) evaluations, shown to the LLM with history feedback
-    settings = dict(program=program, model=model, feedback=feedback, repeat=repeat,
+    # TextGrad and direct: earlier (θ, loss) evaluations, shown with history feedback.
+    # OPRO: every (θ, loss) evaluated so far, including the starting point.
+    past = [(theta, loss)] if method == "opro" else []
+    settings = dict(program=program, model=model, feedback=feedback, repeat=repeat, method=method,
                     family=oracle.meta.get("family"), n=len(oracle.theta0),
                     knobs=json.dumps(oracle.meta.get("knobs"), sort_keys=True),
                     run_id=uuid.uuid4().hex)
-    label = f"[{Path(program).stem} | {model} | {feedback} | rep {repeat}]"
+    label = f"[{Path(program).stem} | {method} | {model} | {feedback} | rep {repeat}]"
     for step in range(args.steps):
-        accepted = None
+        rows = []
         for sample in range(args.samples):
             t0, tokens0 = time.time(), (engine.prompt_tokens, engine.completion_tokens)
-            proposal = propose(engine, oracle, theta, loss, past, feedback, label)
+            proposal = propose(method, engine, oracle, theta, loss, past, feedback, label)
             row = dict(settings, step=step, sample=sample, theta=theta,
                        seconds=round(time.time() - t0, 1),
                        prompt_tokens=engine.prompt_tokens - tokens0[0],
@@ -98,21 +108,31 @@ def run_one(oracle, program, model, feedback, repeat, args, out_dir):
             if proposal["theta_new"] is not None:
                 row.update(oracle.score(theta, proposal["theta_new"]))
             append(out_dir / "steps.jsonl", row)
-            if sample == 0:
-                accepted = row
-        # Like TextGrad, keep the first proposal even if the loss went up. Exceptions:
-        # an unusable answer leaves θ unchanged (a failed step), and so does a θ where the
-        # program diverged, which the LLM then sees in its history as "not finite".
-        note = accepted["error"] or ""
-        if accepted.get("diverged"):
-            past.append((accepted["theta_new"], math.inf))
-            note = "proposal diverged; θ kept"
-        elif accepted["theta_new"] is not None:
-            past.append((theta, loss))
-            theta, loss = accepted["theta_new"], accepted["loss_after"]
+            rows.append(row)
+        if method == "opro":
+            # OPRO keeps every evaluation in its history and the best θ so far as the state.
+            usable = [r for r in rows if r["theta_new"] is not None]
+            past += [(r["theta_new"], math.inf if r.get("diverged") else r["loss_after"]) for r in usable]
+            finite = [r for r in usable if not r.get("diverged")]
+            best = min(finite, key=lambda r: r["loss_after"], default=None)
+            if best is not None and best["loss_after"] < loss:
+                theta, loss = best["theta_new"], best["loss_after"]
+            note = f"{len(usable)}/{len(rows)} usable proposals"
+        else:
+            # Like TextGrad, keep the first proposal even if the loss went up. Exceptions:
+            # an unusable answer leaves θ unchanged (a failed step), and so does a θ where the
+            # program diverged, which the LLM then sees in its history as "not finite".
+            accepted = rows[0]
+            note = accepted["error"] or ""
+            if accepted.get("diverged"):
+                past.append((accepted["theta_new"], math.inf))
+                note = "proposal diverged; θ kept"
+            elif accepted["theta_new"] is not None:
+                past.append((theta, loss))
+                theta, loss = accepted["theta_new"], accepted["loss_after"]
         print(f"{label} step {step + 1}/{args.steps}: loss = {loss:.6g}"
               + (f"  ({note})" if note else ""), flush=True)
-    append(out_dir / "runs.jsonl", dict(settings, key=run_key(program, model, feedback, repeat),
+    append(out_dir / "runs.jsonl", dict(settings, key=run_key(program, model, feedback, repeat, method),
                                          final_loss=loss, llm_calls=engine.calls,
                                          prompt_tokens=engine.prompt_tokens,
                                          completion_tokens=engine.completion_tokens))
@@ -136,9 +156,12 @@ def main():
                     help='e.g. kimi-k3 kimi-k2.6 kimi-k2.6:nothink, or "mock" for a free test')
     ap.add_argument("--feedback", nargs="+", default=["loss"], choices=FEEDBACK_MODES)
     ap.add_argument("--repeats", type=int, default=1, help="independent runs per setting")
-    ap.add_argument("--steps", type=int, default=10, help="TextGrad updates per run")
+    ap.add_argument("--steps", type=int, default=10, help="updates per run")
+    ap.add_argument("--method", default="textgrad", choices=list(METHODS),
+                    help="LLM optimizer: textgrad, direct (one call per step) or opro")
     ap.add_argument("--samples", type=int, default=1,
-                    help="proposals drawn at each state; all are scored, the first is kept")
+                    help="proposals drawn at each state; all are scored; the first is kept "
+                         "(OPRO: the best so far is kept)")
     ap.add_argument("--limit", type=int, help="only the first N problems (e.g. to time a slow model)")
     ap.add_argument("--mock", action="store_true",
                     help="use the free mock model instead (results go to <name>-mock); tests the pipeline")
@@ -149,7 +172,7 @@ def main():
     if args.stage:
         s = STAGES[args.stage]
         args.programs, args.models, args.feedback = s["programs"], s["models"], s["feedback"]
-        args.steps, args.samples = s["steps"], s["samples"]
+        args.steps, args.samples, args.method = s["steps"], s["samples"], s["method"]
         args.name = args.name or args.stage
     if not args.programs:
         ap.error("give --stage or --programs")
@@ -177,7 +200,7 @@ def main():
         """All remaining runs on one problem, in its own Julia process. Returns failures."""
         program_rel = str(Path(program).resolve().relative_to(REPO_ROOT))
         todo = [c for c in itertools.product(args.models, args.feedback, range(args.repeats))
-                if run_key(program_rel, *c) not in done]
+                if run_key(program_rel, *c, args.method) not in done]
         if not todo and program_rel in gd_done:
             return 0
         with JuliaOracle(REPO_ROOT / program_rel) as oracle:

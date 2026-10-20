@@ -43,6 +43,9 @@ always current.
 | 7 | `long` | Artemis | 20 | 20 | 1,800 | 2 h | $10.04 | **done** |
 | 8 | `mainB-solvers` | Artemis | 40 | 80 | 2,400 | 3.5 h | $13.71 | **done** |
 | 9 | `mainB-testfns` | Alaina | 180 | 360 | 10,800 | ~10 h | ~$60–75 | to do |
+| 10 | `direct` | Artemis | 20 | 40 | 400 | ~30 min | ~$1–2 | to do |
+| 11 | `opro` | Artemis | 20 | 20 | 800 | ~1 h | ~$3–5 | to do |
+| 12 | derivative-free baselines (below) | Artemis | 330 | – | 0 | 30 s | free | **done** |
 
 The order matters only within each person's list. We can run our stages at the same time.
 
@@ -55,6 +58,11 @@ The order matters only within each person's list. We can run our stages at the s
   likely ~$140+ for `kimi-k3`, whose output costs 3.75× more.
 - **samples** draws 3 proposals at every state on those 20 problems, all scored, to
   measure how consistent the LLM's steps are.
+- **direct** and **opro** run other LLM optimizers on the same 20 problems with the same
+  scoring (`python/idea1/other_methods.py`). `direct`: one LLM call per step, given the
+  same information as TextGrad's critique call; it tests whether TextGrad's critique and
+  feedback calls add anything. `opro`: OPRO (Yang et al., 2024), 4 proposals per step,
+  shown the 20 best evaluations so far, best so far kept. Neither sees gradients.
 - **long** runs the same 20 problems for 30 steps instead of 10, to see whether TextGrad
   keeps improving or plateaus.
 - Times and costs for `nothink` stages come from finished stages: about 30 s per step and
@@ -84,6 +92,23 @@ It writes `results/idea1/enzyme-timing/timing.jsonl`, one row per problem: Enzym
 one-time compile time, the time of one gradient, one loss evaluation and one
 gradient-descent step, the full gradient-descent loss curve, and the machine it ran on.
 Commit that folder like a stage. Rerun it if the datasets change.
+
+## Derivative-free baselines (free, no API)
+
+The fair comparison for the LLM optimizers: classical methods that, like the LLMs, see
+only loss values and no gradients. For every problem, from `THETA0`, they record the best
+loss after each of 100 loss evaluations, so each LLM method can be compared at an equal
+number of evaluations (TextGrad and `direct`: 1 per step; `opro`: 4 per step):
+
+```
+julia --project=julia julia/idea1/dfo_baselines.jl data/idea1_solvers data/idea1_testfns
+```
+
+- **(1+1)-ES:** random Gaussian steps with the 1/5th success rule for the step size, 5 seeds.
+- **Nelder–Mead:** standard coefficients; its first n evaluations build the initial
+  simplex, so on problems with n ≥ 100 it never gets past that.
+
+It writes `results/idea1/dfo/dfo.jsonl` in about 30 s. Commit that folder like a stage.
 
 ## Setup (once)
 

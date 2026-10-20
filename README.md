@@ -5,14 +5,17 @@
 TextGrad (an LLM) updates a problem's parameters θ. Every update is scored against
 Enzyme's exact gradient at that point: cosine to −∇f, whether the loss went down, and
 the step length relative to the best length along the same direction. Enzyme's own
-gradient descent runs from the same start for the same number of steps.
+gradient descent runs from the same start for the same number of steps. For comparison,
+two other LLM optimizers (direct prompting and OPRO) and classical derivative-free methods
+run on the same problems; like TextGrad, none of them sees gradients.
 
 ```
 data/<dataset>/problems/P<id>.jl    the code: shown to the LLM, differentiated by Enzyme
 data/<dataset>/constants/P<id>.jl   the numbers the code needs and THETA0; never shown to the LLM
 data/<dataset>/hidden/              answer key (θ*, f*, settings), used only for scoring
 julia/idea1/                        loading, Enzyme scoring, dataset checks, Python bridge
-python/idea1/                       TextGrad loop, run plan and runner, summary and plots
+python/idea1/                       TextGrad and other LLM optimizers, run plan and runner,
+                                    summary and plots
 results/idea1/<stage>/              one folder per stage: raw results, CSVs and plots
 ```
 
@@ -54,5 +57,7 @@ python/.venv/bin/python python/idea1/plots.py results/idea1/pilot       # PNGs i
 ```
 
 `run.py` also takes problems, models and feedback modes by hand; `run.py --help` lists
-every option. `julia/idea1/time_enzyme.jl` times Enzyme on every problem for the speed
-comparison (free; see the guide).
+every option, including `--method direct|opro` for LLM optimizers other than TextGrad.
+`julia/idea1/time_enzyme.jl` times Enzyme on every problem for the speed comparison, and
+`julia/idea1/dfo_baselines.jl` runs classical derivative-free baselines (both free; see
+the guide).

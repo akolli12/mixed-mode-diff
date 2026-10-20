@@ -18,7 +18,8 @@ SOLVERS = ("solver_richardson", "solver_chebyshev", "solver_sor")
 NOTHINK = "kimi-k2.6:nothink"
 STEPS = 10
 THINKING_STEPS = 5
-CALLS_PER_STEP = 3
+CALLS_PER_PROPOSAL = {"textgrad": 3, "direct": 1, "opro": 1}
+OPRO_CANDIDATES = 4
 
 
 def load_settings():
@@ -70,9 +71,9 @@ MODEL_SUBSET = (
 )
 
 
-def stage(owner, programs, models, feedback, samples=1, steps=STEPS, about=""):
+def stage(owner, programs, models, feedback, samples=1, steps=STEPS, method="textgrad", about=""):
     return dict(owner=owner, programs=programs, models=models, feedback=feedback,
-                samples=samples, steps=steps, about=about)
+                samples=samples, steps=steps, method=method, about=about)
 
 
 # In the order they should be run.
@@ -94,6 +95,11 @@ STAGES = {
                      about="3 proposals per state: how consistent are the LLM's steps?"),
     "long": stage("Artemis", MODEL_SUBSET, [NOTHINK], ["history"], steps=30,
                   about="30 steps instead of 10: does TextGrad keep improving or plateau?"),
+    # Other LLM optimizers on the same 20 problems; neither sees gradients (other_methods.py).
+    "direct": stage("Artemis", MODEL_SUBSET, [NOTHINK], ["loss", "history"], method="direct",
+                    about="one LLM call per step, no critique or feedback call"),
+    "opro": stage("Artemis", MODEL_SUBSET, [NOTHINK], ["history"], method="opro",
+                  samples=OPRO_CANDIDATES, about="OPRO: 4 proposals per step, best so far kept"),
     "mainB-solvers": stage("Artemis", instances(SOLVERS, [1, 2]), [NOTHINK], ["loss", "history"],
                            about="instances 2-3 of every solver setting, for error bars"),
     "mainB-testfns": stage("Alaina", instances(TESTFNS, [1, 2]), [NOTHINK], ["loss", "history"],
@@ -103,7 +109,7 @@ STAGES = {
 
 def size(s):
     runs = len(s["programs"]) * len(s["models"]) * len(s["feedback"])
-    return runs, runs * s["steps"] * s["samples"] * CALLS_PER_STEP
+    return runs, runs * s["steps"] * s["samples"] * CALLS_PER_PROPOSAL[s["method"]]
 
 
 if __name__ == "__main__":
