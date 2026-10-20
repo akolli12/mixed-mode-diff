@@ -69,7 +69,8 @@ def trajectories(steps, gd):
                 loss = r["loss_after"]
             losses.append(loss)
         rows.append(dict(run_id=run_id, program=first["program"], family=first["family"],
-                         n=first["n"], knobs=first["knobs"], model=first["model"], spec=first["spec"],
+                         n=first["n"], knobs=first["knobs"], model=first["model"],
+                         spec=first["spec"] if "spec" in first else first["model"],
                          feedback=first["feedback"], losses=losses))
     return pd.DataFrame(rows)
 

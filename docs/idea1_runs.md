@@ -43,8 +43,8 @@ always current.
 | 7 | `long` | Artemis | 20 | 20 | 1,800 | 2 h | $10.04 | **done** |
 | 8 | `mainB-solvers` | Artemis | 40 | 80 | 2,400 | 3.5 h | $13.71 | **done** |
 | 9 | `mainB-testfns` | Alaina | 180 | 360 | 10,800 | ~10 h | ~$60–75 | to do |
-| 10 | `direct` | Artemis | 20 | 40 | 400 | ~30 min | ~$1–2 | to do |
-| 11 | `opro` | Artemis | 20 | 20 | 800 | ~1 h | ~$3–5 | to do |
+| 10 | `direct` | Artemis | 20 | 40 | 400 | 1 h | $5.91 | **done** |
+| 11 | `opro` | Artemis | 20 | 20 | 800 | ~1–1.5 h | ~$12–15 | to do |
 | 12 | derivative-free baselines (below) | Artemis | 330 | – | 0 | 30 s | free | **done** |
 
 The order matters only within each person's list. We can run our stages at the same time.
@@ -62,7 +62,9 @@ The order matters only within each person's list. We can run our stages at the s
   scoring (`python/idea1/other_methods.py`). `direct`: one LLM call per step, given the
   same information as TextGrad's critique call; it tests whether TextGrad's critique and
   feedback calls add anything. `opro`: OPRO (Yang et al., 2024), 4 proposals per step,
-  shown the 20 best evaluations so far, best so far kept. Neither sees gradients.
+  shown the 20 best evaluations so far, best so far kept. Neither sees gradients. Both
+  allow the model to reason before answering, so each call writes more than a TextGrad
+  call: `direct` averaged ~$0.015 per call, which puts `opro` (800 calls) at ~$12–15.
 - **long** runs the same 20 problems for 30 steps instead of 10, to see whether TextGrad
   keeps improving or plateaus.
 - Times and costs for `nothink` stages come from finished stages: about 30 s per step and
