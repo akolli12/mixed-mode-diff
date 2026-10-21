@@ -44,7 +44,7 @@ always current.
 | 8 | `mainB-solvers` | Artemis | 40 | 80 | 2,400 | 3.5 h | $13.71 | **done** |
 | 9 | `mainB-testfns` | Alaina | 180 | 360 | 10,800 | ~10 h | ~$60–75 | to do |
 | 10 | `direct` | Artemis | 20 | 40 | 400 | 1 h | $5.91 | **done** |
-| 11 | `opro` | Artemis | 20 | 20 | 800 | ~1–1.5 h | ~$12–15 | to do |
+| 11 | `opro` | Artemis | 20 | 20 | 800 | 4 h | $9.12 | **done** |
 | 12 | derivative-free baselines (below) | Artemis | 330 | – | 0 | 30 s | free | **done** |
 
 The order matters only within each person's list. We can run our stages at the same time.

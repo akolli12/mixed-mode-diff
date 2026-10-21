@@ -58,15 +58,21 @@ def problem_label(family, n, knobs):
 
 def trajectories(steps, gd):
     """One row per run: settings plus the loss after each step (index 0 = THETA0).
-    A failed or diverged step leaves θ, and so the loss, unchanged."""
+    A failed or diverged step leaves θ, and so the loss, unchanged. TextGrad and direct
+    prompting keep each step's first proposal; OPRO keeps the best loss found so far."""
     rows = []
-    for run_id, g in steps[steps["sample"] == 0].sort_values("step").groupby("run_id"):
+    for run_id, g in steps.sort_values(["step", "sample"]).groupby("run_id"):
         first = g.iloc[0]
+        opro = first.get("method") == "opro"
         loss = gd.loc[first["program"], "losses"][0]
         losses = [loss]
-        for _, r in g.iterrows():
-            if isinstance(r["theta_new"], list) and r.get("diverged") is not True:
-                loss = r["loss_after"]
+        for _, step_rows in g.groupby("step"):
+            usable = [r for _, r in step_rows.iterrows()
+                      if isinstance(r["theta_new"], list) and r.get("diverged") is not True]
+            if opro:
+                loss = min([loss] + [r["loss_after"] for r in usable])
+            elif usable and usable[0]["sample"] == 0:
+                loss = usable[0]["loss_after"]
             losses.append(loss)
         rows.append(dict(run_id=run_id, program=first["program"], family=first["family"],
                          n=first["n"], knobs=first["knobs"], model=first["model"],
