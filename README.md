@@ -26,6 +26,7 @@ python/audit.py                          independent check of every generated da
 python/baselines.py, python/figures.py   Idea 2 baseline solver sweeps and their figures
 make_all.sh                              regenerates all datasets from fixed seeds, then audits
 docs/idea1_runs.md                       Idea 1 run plan: stages, who runs what, results
+docs/idea2.md                            Idea 2 plan and status: steps, what is built, how it works
 results/idea1/<stage>/                   Idea 1 results, one folder per stage
 results/idea2/<name>/                    Idea 2 search runs, one folder per run
 ```
