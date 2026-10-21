@@ -14,9 +14,12 @@ data/idea1_testfns, data/idea1_solvers   Idea 1 problems (see "Problem format" b
 data/diffusion, data/helmholtz           Idea 2 problem families (HDF5, train/test splits)
 julia/idea1/                             Idea 1: loading, Enzyme scoring, dataset checks,
                                          timing, derivative-free baselines, Python bridge
+julia/idea2/                             Idea 2: harness (solver runs, Enzyme tuning, gradient
+                                         report, scoring), starting programs, Python bridge
 julia/MMDData/                           Julia loaders and matrix assemblers for all datasets
 python/idea1/                            Idea 1: TextGrad and other LLM optimizers, run plan
                                          and runner, summary and plots
+python/idea2/                            Idea 2: search loop and the LLM's prompts
 python/idea1.py, python/idea1_solvers.py Idea 1 dataset generators
 python/diffusion.py, python/helmholtz.py Idea 2 dataset generators
 python/audit.py                          independent check of every generated dataset file
@@ -24,6 +27,7 @@ python/baselines.py, python/figures.py   Idea 2 baseline solver sweeps and their
 make_all.sh                              regenerates all datasets from fixed seeds, then audits
 docs/idea1_runs.md                       Idea 1 run plan: stages, who runs what, results
 results/idea1/<stage>/                   Idea 1 results, one folder per stage
+results/idea2/<name>/                    Idea 2 search runs, one folder per run
 ```
 
 ## Setup
@@ -104,3 +108,38 @@ the guide).
 
 Regenerate every dataset and audit it with `./make_all.sh` (add `--baselines` to also run
 the baseline sweeps, about an hour).
+
+## Idea 2: gradient-guided solver search
+
+Each iteration the LLM sees the best program so far and its validation results, and writes
+a new one. The program is compiled, its tunable numbers θ are tuned with Enzyme gradients
+of a training loss (mean log10 ‖r‖/‖b‖ after a fixed number of iterations), and it is scored
+on validation instances by its iterations to ‖r‖/‖b‖ ≤ 1e-8 (score = mean log10 iterations;
+for runs that hit the cap, the count is extrapolated from the convergence rate). The best
+program so far is the parent of the next iteration. Two kinds of program (`--frame`):
+
+- `precond`: the LLM writes a preconditioner `setup`/`precond!`; a fixed flexible CG applies it.
+- `solver`: the LLM writes the whole iteration `init`/`step!`.
+
+Three feedback modes (`--mode`), compared at the same number of LLM calls:
+
+| mode | θ set by | the LLM sees |
+|---|---|---|
+| `llm_only` | the LLM | validation results |
+| `score_only` | Enzyme tuning | + the tuned θ |
+| `ours` | Enzyme tuning | + the gradient report (sensitivities, θ at bounds, loss by contrast) |
+
+The starting programs are in `julia/idea2/seeds/` (Jacobi polynomial preconditioner;
+damped Jacobi with momentum). Check the harness for free (Enzyme vs finite differences,
+tuning, iteration counts), then run a search (`--model mock` tests the loop for free):
+
+```
+julia --project=julia julia/idea2/check_harness.jl channels 64
+python/.venv/bin/python python/idea2/search.py --family channels --N 64 --frame precond \
+    --mode ours --iterations 20 --name channels64-precond-ours
+```
+
+Training instances 1–4 and validation instances 5–8 come from the train split; at the end
+the best program and the starting program are scored on all test-split instances.
+`search.py --help` lists every option. Outputs in `results/idea2/<name>/`: `config.json`,
+`candidates.jsonl` (every reply, program and evaluation), `test.json`.
