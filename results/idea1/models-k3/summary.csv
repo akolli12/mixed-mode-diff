@@ -1,0 +1,21 @@
+family,n,knobs,method,model,feedback,runs,failed,cos_mean,cos_pos,descent,ratio_med,overshoot,final_loss,gd_final
+logcosh,5,"{""kappa"": 1000}",textgrad,kimi-k3,history,1,0.0,0.1592,0.8,0.6,1.3319,0.8,225.172,236.3419
+logcosh,5,"{""kappa"": 10}",textgrad,kimi-k3,history,1,0.0,0.5964,0.8,0.8,0.0379,0.2,27.1352,6.9069
+logcosh,20,"{""kappa"": 1000}",textgrad,kimi-k3,history,1,0.0,0.1788,0.8,0.6,1.0433,0.6,1565.9456,159.2056
+logcosh,20,"{""kappa"": 10}",textgrad,kimi-k3,history,1,0.0,0.0517,0.6,0.6,1.0842,0.8,201.4564,16.0437
+logistic,5,"{""lam"": 0.01, ""spread"": 100}",textgrad,kimi-k3,history,1,0.0,0.4874,0.8,0.6,1.3969,1.0,-0.7548,-2.6028
+logistic,5,"{""lam"": 0.01, ""spread"": 1}",textgrad,kimi-k3,history,1,0.0,0.1928,0.8,0.8,0.3516,0.2,-1.164,-3.9846
+logistic,20,"{""lam"": 0.01, ""spread"": 100}",textgrad,kimi-k3,history,1,0.0,0.2542,0.8,0.4,1.3985,0.8,2.5405,2.207
+logistic,20,"{""lam"": 0.01, ""spread"": 1}",textgrad,kimi-k3,history,1,0.0,0.1774,1.0,1.0,0.4514,0.2,-2.9002,-3.2472
+quadratic,2,"{""kappa"": 1000}",textgrad,kimi-k3,history,1,0.0,0.433,0.8,0.6,1.1817,0.6,5.6662,5.3279
+quadratic,2,"{""kappa"": 10}",textgrad,kimi-k3,history,1,0.0,0.2668,0.6,0.6,0.7959,0.6,-3.0643,-4.4081
+quadratic,10,"{""kappa"": 1000}",textgrad,kimi-k3,history,1,0.0,0.391,0.8,0.6,1.3155,0.8,131.9085,22.242
+quadratic,10,"{""kappa"": 10}",textgrad,kimi-k3,history,1,0.0,0.3249,0.8,0.6,1.2548,0.8,25.093,-1.7836
+quadratic,50,"{""kappa"": 1000}",textgrad,kimi-k3,history,1,0.0,0.3512,1.0,0.2,2.628,0.8,2401.2624,373.6586
+quadratic,50,"{""kappa"": 10}",textgrad,kimi-k3,history,1,0.0,0.2331,0.8,0.6,1.2687,1.0,57.3768,12.2263
+rosenbrock,2,"{""b"": 100}",textgrad,kimi-k3,history,1,0.0,0.7679,1.0,0.8,0.835,0.4,0.6648,0.1415
+rosenbrock,2,"{""b"": 10}",textgrad,kimi-k3,history,1,0.0,0.603,1.0,0.6,1.1008,0.6,4.2271,0.3423
+rosenbrock,10,"{""b"": 100}",textgrad,kimi-k3,history,1,0.0,0.6971,1.0,0.6,0.9956,0.4,145.1972,10.0742
+rosenbrock,10,"{""b"": 10}",textgrad,kimi-k3,history,1,0.0,0.3677,0.8,0.4,1.7207,0.8,171.8195,12.2455
+solver_richardson,8,"{""amp"": 0.0, ""contrast"": 1.0}",textgrad,kimi-k3,history,1,0.2,0.1131,1.0,0.75,1.2841,0.75,-0.3955,-0.1663
+solver_richardson,8,"{""amp"": 3.0, ""contrast"": 403.4287934927351}",textgrad,kimi-k3,history,1,0.0,0.1216,0.8,0.4,1.731,0.8,-0.0641,-0.0423
