@@ -38,7 +38,7 @@ always current.
 | 2 | `mainA-solvers` | Artemis | 20 | 40 | 1,200 | 70 min | $6.81 | **done** |
 | 3 | `mainA-testfns` | Alaina | 90 | 180 | 5,400 | ~5 h | $29.00 | **done** |
 | 4 | `models-k26think` | Artemis | 20 | 20 | 300 | 3 h | $14.26 | **done** |
-| 5 | `models-k3` | Alaina | 20 | 20 | 300 | ~10 h? time it first (below) | ~$70–90? | to do |
+| 5 | `models-k3` | Alaina | 20 | 20 | 300 | ~8 h at `--workers 2` (see below) | $51 (+~$5–8 discarded) | **done** |
 | 6 | `samples` | Artemis | 20 | 20 | 1,800 | 70 min | $9.69 | **done** |
 | 7 | `long` | Artemis | 20 | 20 | 1,800 | 2 h | $10.04 | **done** |
 | 8 | `mainB-solvers` | Artemis | 40 | 80 | 2,400 | 3.5 h | $13.71 | **done** |
@@ -70,9 +70,16 @@ The order matters only within each person's list. We can run our stages at the s
 - Times and costs for `nothink` stages come from finished stages: about 30 s per step and
   $0.16–0.17 per 10-step run. The large-n problems and history feedback have longer
   prompts, so allow extra.
-- `models-k26think` (done) averaged ~7 min, ~34k output tokens and ~$0.14 per step. For
-  `models-k3` the numbers are a guess assuming it thinks about as much (about $0.55 per
-  step at k3's prices, probably slower); its `--limit 1` run will tell.
+- `models-k26think` (done) averaged ~7 min, ~34k output tokens and ~$0.14 per step.
+  `models-k3` (done) took a median of ~10 min, 27k output tokens and $0.51 per step
+  ($0.43 median), and much more on the two Richardson problems (median 66k tokens, 25 min
+  and $1.01 per step; one step used 175k tokens). 1 of its 100 steps returned no answer.
+  Run it with `--workers 2`: with 4 workers each call was slower and more of them stalled.
+- **Stalled `kimi-k3` calls.** The first `models-k3` launch lost most of a night to calls that
+  Moonshot finished and billed but whose answer never reached the laptop; the client waited
+  out its timeout and resent them (~$5–8 of discarded calls). `python/idea1/llm.py` now
+  streams answers and gives up on a call only after 5 minutes with no data, which fixed it;
+  the last 15 `models-k3` runs ran with no stalls.
 - **Empty answers with thinking models.** In `models-k26think`, 6 of 100 steps (all on
   logcosh problems) ended with an empty answer: the model used the API's default output
   limit thinking during the update call and never wrote θ. These are recorded as the

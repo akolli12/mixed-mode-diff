@@ -32,9 +32,9 @@ contrast level. Name runs `<family><N>-<frame>-<mode>-r<repeat>`, e.g.
 
 | # | Decision | Options | Decided |
 |---|---|---|---|
-| 1 | Model and thinking for Phase 1 | `kimi-k2.6:nothink` (~$0.02 per call, fast). Thinking on ran out of its 32k output tokens before writing any code in the first pilot; it would need a larger `max_tokens` in `python/idea1/llm.py`, and costs ~$0.13+ and ~6 min per call. GPT-6 Astra is too expensive for all of Phase 1 (below). | |
-| 2 | Who runs what | The steps form two tracks that can go in parallel: **runs** (pilots, Phase 1, summary script) and **code** (baselines, Prime Intellect engine, work counting, strong seeds). One track each is a natural split. | |
-| 3 | How to spend the Prime Intellect credits | see "Budget and credits" below | |
+| 1 | Model and thinking for Phase 1 | `kimi-k2.6:nothink` (~$0.02 per call, fast). Thinking on ran out of its 32k output tokens before writing any code in the first pilot; it would need a larger `max_tokens` in `python/idea1/llm.py`, and costs ~$0.13+ and ~6 min per call. GPT-6 Astra is too expensive for all of Phase 1 (below). | `kimi-k2.6:nothink` |
+| 2 | Who runs what | The steps form two tracks that can go in parallel: **runs** (pilots, Phase 1, summary script) and **code** (baselines, Prime Intellect engine, work counting, strong seeds). One track each is a natural split. | Alaina: Phase 1 and the Part A follow-up (pilots, Phase 1a–c, summary script, ablation, Astra pilot and Phase 1a with Astra, step-length correction). Artemis: the solver infrastructure and Phase 2 (baselines, Prime Intellect engine, work counting, strong seeds, Phase 2 runs, N = 128 test, Helmholtz, optional Part A runs). Together: the step 8 checkpoint and the final report. |
+| 3 | How to spend the Prime Intellect credits | see "Budget and credits" below | Proposed: Alaina's $200 for steps 12–13 (~$60, rest in reserve); Artemis's $200 for step 16 and optional A3 (~$155). |
 
 ## Budget and credits
 
@@ -93,28 +93,28 @@ Julia process), CPU permitting.
 
 | Step | What | Track | Needs | Who | Runs | LLM calls | Time | Cost | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| 0 | Setup and free checks (below) | – | – | each of us | – | 0 | 15 min | free | **done** on Artemis's machine |
-| 1 | Housekeeping | C | – | | – | 0 | 10 min | free | to do |
-| 2 | Pilot, `precond` frame (Kimi) | R | 0 | | 1 | 5 | ~30 min | ~$0.10 | started (thinking-on try returned no code); redo with decision 1 |
-| 3 | Pilot, `solver` frame (Kimi) | R | 0 | | 1 | 5 | ~30 min | ~$0.10 | to do |
-| 4 | Full baseline sweep (small code change, then run) | C | – | | – | 0 | ~1–2 h | free | pilot done (N = 128, 1 instance) |
-| 5 | Phase 1a: `channels`, `precond`, 3 modes × 3 repeats (Kimi) | R | 2 | | 9 | 180 | ~3–5 h | ~$4 | to do |
-| 6 | Summary script `python/idea2/summarize.py` | C | write while 5 runs | | – | 0 | – | free | to do |
-| 7 | Phase 1b: `channels`, `solver`, 3 modes × 3 repeats (Kimi) | R | 3 | | 9 | 180 | ~3–5 h | ~$4 | to do |
+| 0 | Setup and free checks (below) | – | – | each of us | – | 0 | 15 min | free | **done** on both machines |
+| 1 | Housekeeping | C | – | Alaina | – | 0 | 10 min | free | to do |
+| 2 | Pilot, `precond` frame (Kimi) | R | 0 | Alaina | 1 | 5 | ~30 min | ~$0.10 | started (thinking-on try returned no code); redo with decision 1 |
+| 3 | Pilot, `solver` frame (Kimi) | R | 0 | Alaina | 1 | 5 | ~30 min | ~$0.10 | to do |
+| 4 | Full baseline sweep (small code change, then run) | C | – | Artemis | – | 0 | ~1–2 h | free | pilot done (N = 128, 1 instance) |
+| 5 | Phase 1a: `channels`, `precond`, 3 modes × 3 repeats (Kimi) | R | 2 | Alaina | 9 | 180 | ~3–5 h | ~$4 | to do |
+| 6 | Summary script `python/idea2/summarize.py` | C | write while 5 runs | Alaina | – | 0 | – | free | to do |
+| 7 | Phase 1b: `channels`, `solver`, 3 modes × 3 repeats (Kimi) | R | 3 | Alaina | 9 | 180 | ~3–5 h | ~$4 | to do |
 | 8 | Checkpoint: do the modes differ on `channels`? | both | 5, 6, 7 | both | – | 0 | 1 h | free | to do |
-| 9 | Phase 1c: the other 4 families × 2 frames × 3 modes × 3 repeats (Kimi) | R | 8 (only if the modes differ) | | 72 | 1,440 | ~1–2 days | ~$29 | to do |
-| 10 | Ablation of the report's parts (Kimi) | R + C | 5 | | 9–12 | 180–240 | ~4–6 h | ~$5 | to do |
-| 11 | Prime Intellect engine in `python/idea1/llm.py` | C | – | | – | 0 | 1–2 h | free | to do |
-| 12 | Astra pilot: cost and time per call | R | 11 | | 2 | 10 | ~1 h | ~$5 | to do |
-| 13 | Phase 1a with Astra (low reasoning) | R | 8, 12 | | 9 | 180 | ~5–10 h | ~$55 | to do |
-| 14 | Work counting in the harness and baselines | C | 4 | | – | 0 | – | free | to do |
-| 15 | Strong seeds in Julia: ILU(0) and two-level smoothed-aggregation AMG | C | – | | – | 0 | – | free | to do |
-| 16 | Phase 2 runs with Astra (medium reasoning) | R | 8, 12, 14, 15 | | ~4 | ~140 | ~5–8 h | ~$110 | to do |
-| 17 | Generalization: best programs at N = 128 (small script) | C + R | 16 | | – | 0 | ~1 h | free | to do |
-| 18 | Helmholtz (stretch): GMRES harness, complex arithmetic, training loss | C | 16 | | TBD | TBD | TBD | TBD | only if time |
-| A1 | Part A: correcting the LLM's step length (Section 7.2 of the midterm) | C + R | – | | 20 problems | 0–600 | ~2 h | free–$10 | to do |
-| A2 | Part A (optional): `blackbox` feedback, history without the code | C + R | – | | 20 | ~600 | ~1–2 h | ~$10 | optional |
-| A3 | Part A (optional): GPT-6 Astra row in the model table | R | 11 | | 20 | 300 | ~3 h | ~$45 | optional |
+| 9 | Phase 1c: the other 4 families × 2 frames × 3 modes × 3 repeats (Kimi) | R | 8 (only if the modes differ) | Alaina | 72 | 1,440 | ~1–2 days | ~$29 | to do |
+| 10 | Ablation of the report's parts (Kimi) | R + C | 5 | Alaina | 9–12 | 180–240 | ~4–6 h | ~$5 | to do |
+| 11 | Prime Intellect engine in `python/idea1/llm.py` | C | – | Artemis | – | 0 | 1–2 h | free | to do |
+| 12 | Astra pilot: cost and time per call | R | 11 | Alaina | 2 | 10 | ~1 h | ~$5 | to do |
+| 13 | Phase 1a with Astra (low reasoning) | R | 8, 12 | Alaina | 9 | 180 | ~5–10 h | ~$55 | to do |
+| 14 | Work counting in the harness and baselines | C | 4 | Artemis | – | 0 | – | free | to do |
+| 15 | Strong seeds in Julia: ILU(0) and two-level smoothed-aggregation AMG | C | – | Artemis | – | 0 | – | free | to do |
+| 16 | Phase 2 runs with Astra (medium reasoning) | R | 8, 12, 14, 15 | Artemis | ~4 | ~140 | ~5–8 h | ~$110 | to do |
+| 17 | Generalization: best programs at N = 128 (small script) | C + R | 16 | Artemis | – | 0 | ~1 h | free | to do |
+| 18 | Helmholtz (stretch): GMRES harness, complex arithmetic, training loss | C | 16 | Artemis | TBD | TBD | TBD | TBD | only if time |
+| A1 | Part A: correcting the LLM's step length (Section 7.2 of the midterm) | C + R | – | Alaina | 20 problems | 0–600 | ~2 h | free–$10 | to do |
+| A2 | Part A (optional): `blackbox` feedback, history without the code | C + R | – | Artemis | 20 | ~600 | ~1–2 h | ~$10 | optional |
+| A3 | Part A (optional): GPT-6 Astra row in the model table | R | 11 | Artemis | 20 | 300 | ~3 h | ~$45 | optional |
 | F | Final report and presentation | – | everything above | both | – | – | – | – | to do |
 
 ### Step 0. Setup and free checks (once per machine)
