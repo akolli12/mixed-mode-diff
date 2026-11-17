@@ -2,7 +2,7 @@
 Baseline solver sweeps: confirms that the generated problem families actually break standard
 solvers (the premise of Idea 2) and gives the reference curves new solvers must beat.
 
-Diffusion: iterations of CG / Jacobi-PCG / ILU(0)-PCG / AMG-PCG (pyamg smoothed aggregation)
+Diffusion: iterations of CG / Jacobi-PCG / symmetric Gauss-Seidel-PCG / AMG-PCG (pyamg smoothed aggregation)
 to ||r|| / ||b|| <= 1e-8 as the contrast grows on fixed geometry.
 Helmholtz: iterations of GMRES and GMRES + shifted-Laplacian (exact inverse, the "ideal"
 version of the standard preconditioner) as the frequency grows at 10 points per wavelength.
