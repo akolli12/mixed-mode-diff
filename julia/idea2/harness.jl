@@ -15,6 +15,14 @@
 #       step!(x, r, P, S, θ)                       one iteration: update x in place, given
 #                                                  the current residual r = b - A x
 #
+#   Both frames may also define prepare(P) -> C: work that does not depend on θ
+#   (factorisations, inverses, eigenvectors, coarse spaces). It runs once per problem
+#   OUTSIDE automatic differentiation, because Enzyme has no derivative rules for most
+#   LAPACK calls (e.g. the LU behind inv), even when their inputs do not depend on θ.
+#   When prepare is defined, setup/init take its result as a second argument:
+#   setup(P, C, θ) / init(P, C, θ). Internally every candidate is called that way; for one
+#   without prepare, C = nothing and an adapter drops it.
+#
 # P is a DiffusionProblem (below). Training loss: mean over training instances of
 # log10(‖r_m‖/‖b‖) after m iterations, differentiated with Enzyme. Evaluation: iterations
 # to ‖r‖/‖b‖ ≤ TOL, per contrast level.
@@ -94,8 +102,8 @@ end
 # ---------------------------------------------------------------- running a candidate
 
 """Relative residual after m iterations of flexible CG with the candidate preconditioner."""
-function run_precond(setup_f, precond_f, P::DiffusionProblem, θ, m::Int)
-    S = setup_f(P, θ)
+function run_precond(setup_f, precond_f, P::DiffusionProblem, C, θ, m::Int)
+    S = setup_f(P, C, θ)
     n = P.n
     x = zeros(n); r = copy(P.b); z = zeros(n); Ap = zeros(n)
     precond_f(z, r, P, S, θ)
@@ -119,8 +127,8 @@ function run_precond(setup_f, precond_f, P::DiffusionProblem, θ, m::Int)
 end
 
 """Relative residual after m iterations of the candidate's own iteration."""
-function run_solver(init_f, step_f, P::DiffusionProblem, θ, m::Int)
-    S = init_f(P, θ)
+function run_solver(init_f, step_f, P::DiffusionProblem, C, θ, m::Int)
+    S = init_f(P, C, θ)
     x = zeros(P.n); r = copy(P.b); Ax = zeros(P.n)
     for _ in 1:m
         step_f(x, r, P, S, θ)
@@ -130,12 +138,12 @@ function run_solver(init_f, step_f, P::DiffusionProblem, θ, m::Int)
     return norm(r) / norm(P.b)
 end
 
-problem_loss(runner, f1, f2, P, θ, m) = log10(runner(f1, f2, P, θ, m) + 1e-30)
+problem_loss(runner, f1, f2, P, C, θ, m) = log10(runner(f1, f2, P, C, θ, m) + 1e-30)
 
 """(iterations to ‖r‖/‖b‖ ≤ TOL or maxit + 1 if not reached, relative residual at the end).
 A breakdown (non-finite residual) returns (maxit + 1, Inf)."""
-function iterations_precond(setup_f, precond_f, P, θ, maxit)
-    S = setup_f(P, θ)
+function iterations_precond(setup_f, precond_f, P, C, θ, maxit)
+    S = setup_f(P, C, θ)
     n = P.n
     x = zeros(n); r = copy(P.b); z = zeros(n); Ap = zeros(n); znew = zeros(n)
     precond_f(z, r, P, S, θ)
@@ -158,8 +166,8 @@ function iterations_precond(setup_f, precond_f, P, θ, maxit)
     return (maxit + 1, res)
 end
 
-function iterations_solver(init_f, step_f, P, θ, maxit)
-    S = init_f(P, θ)
+function iterations_solver(init_f, step_f, P, C, θ, maxit)
+    S = init_f(P, C, θ)
     x = zeros(P.n); r = copy(P.b); Ax = zeros(P.n); bn = norm(P.b)
     res = 1.0
     for it in 1:maxit
@@ -186,8 +194,10 @@ end
 
 struct Candidate
     frame::String
-    f1::Function                 # setup / init
+    f1::Function                 # setup / init, always called as f1(P, C, θ)
     f2::Function                 # precond! / step!
+    prep::Function               # prepare(P) -> C, or P -> nothing if the code has none
+    cache::IdDict{Any,Any}       # prepare's result per problem, computed once
     theta0::Vector{Float64}
     lower::Vector{Float64}
     upper::Vector{Float64}
@@ -201,6 +211,9 @@ const CANDIDATE_PRELUDE = """
 using LinearAlgebra
 import Main: DiffusionProblem, matvec!
 """
+
+"""Whether some method of f takes exactly k positional arguments (argument types are not checked)."""
+takes_args(f, k) = any(meth -> meth.nargs - 1 == k && !meth.isva, Base.invokelatest(methods, f))
 
 function load_candidate(code::String, frame::String)
     mod = Module(:Candidate)
@@ -219,8 +232,23 @@ function load_candidate(code::String, frame::String)
     names = isdefined(mod, :THETA_NAMES) ? String.(collect(getfield(mod, :THETA_NAMES))) :
                                            ["θ[$i]" for i in eachindex(θ0)]
     length(names) == length(θ0) || (names = ["θ[$i]" for i in eachindex(θ0)])
-    return Candidate(frame, getfield(mod, need[1]), getfield(mod, need[2]), θ0, lo, hi, names, mod)
+    f1 = getfield(mod, need[1])
+    if isdefined(mod, :prepare)
+        prep = getfield(mod, :prepare)
+        takes_args(f1, 3) ||
+            error("the code defines prepare(P), so `$(need[1])` must take three arguments: $(need[1])(P, C, θ)")
+        f1_3 = f1
+    else
+        prep = P -> nothing
+        takes_args(f1, 2) ||
+            error("`$(need[1])` must take (P, θ), or (P, C, θ) together with a prepare(P) function")
+        f1_3 = (P, C, θ) -> f1(P, θ)
+    end
+    return Candidate(frame, f1_3, getfield(mod, need[2]), prep, IdDict{Any,Any}(), θ0, lo, hi, names, mod)
 end
+
+"""prepare's result for problem P, computed once per candidate and problem, outside AD."""
+prepared(c::Candidate, P) = get!(() -> Base.invokelatest(c.prep, P), c.cache, P)
 
 runner(c::Candidate) = c.frame == "precond" ? run_precond : run_solver
 counter(c::Candidate) = c.frame == "precond" ? iterations_precond : iterations_solver
@@ -233,16 +261,18 @@ function loss_and_grad(c::Candidate, θ::Vector{Float64}, probs, m)
     g = zeros(length(θ))
     losses = zeros(length(probs))
     for (i, P) in enumerate(probs)
+        C = prepared(c, P)                      # outside autodiff: passed as a constant
         dθ = zeros(length(θ))
         _, val = autodiff(set_runtime_activity(ReverseWithPrimal), problem_loss, Active,
-                          Const(run), Const(c.f1), Const(c.f2), Const(P), Duplicated(copy(θ), dθ), Const(m))
+                          Const(run), Const(c.f1), Const(c.f2), Const(P), Const(C),
+                          Duplicated(copy(θ), dθ), Const(m))
         losses[i] = val
         g .+= dθ ./ length(probs)
     end
     return losses, g
 end
 
-mean_loss(c, θ, probs, m) = mean(problem_loss(runner(c), c.f1, c.f2, P, θ, m) for P in probs)
+mean_loss(c, θ, probs, m) = mean(problem_loss(runner(c), c.f1, c.f2, P, prepared(c, P), θ, m) for P in probs)
 
 """Projected Adam in normalized coordinates u = (θ - LOWER) / (UPPER - LOWER) ∈ [0, 1]."""
 function tune(c::Candidate, probs, m; steps = 25, lr = 0.05)
@@ -330,7 +360,7 @@ function evaluate_iterations(c::Candidate, θ, probs, maxit)
     t0 = time()
     total_its = 0
     for P in probs
-        its, res = count_f(c.f1, c.f2, P, θ, maxit)
+        its, res = count_f(c.f1, c.f2, P, prepared(c, P), θ, maxit)
         key = @sprintf("%g", P.contrast)
         total_its += min(its, maxit)
         push!(get!(eff, key, Float64[]), effective_iterations(its, res, maxit))

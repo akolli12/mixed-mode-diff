@@ -29,7 +29,11 @@ from textgrad.engine_experimental.engine_utils import open_ai_like_formatting
 from textgrad.engine_experimental.litellm import LiteLLMEngine
 
 KIMI_BASE_URL = "https://api.moonshot.ai/v1"
-REQUEST_TIMEOUT = 900  # seconds per API call; kimi-k3 can think for several minutes
+# Answers are streamed, so a call that is still thinking keeps receiving data. A call is given up
+# (and retried) only if no data arrives for STREAM_IDLE_TIMEOUT seconds, which means the
+# connection has stalled, or if it is still streaming after MAX_CALL_SECONDS.
+STREAM_IDLE_TIMEOUT = 300
+MAX_CALL_SECONDS = 3600
 QUICK_RETRIES = 3      # immediate retries of a failed API call, before the runner's slower ones
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -88,31 +92,54 @@ class KimiEngine(LiteLLMEngine):
             extra = dict(temperature=0.6, extra_body={"thinking": {"type": "disabled"}})
         elif self.option == "think":
             extra = dict(extra_body={"thinking": {"type": "enabled"}})
+        messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": content}]
         for attempt in range(QUICK_RETRIES + 1):
             try:
-                response = completion(
-                    model=self.model_string,
-                    messages=[{"role": "system", "content": system_prompt},
-                              {"role": "user", "content": content}],
-                    api_base=KIMI_BASE_URL,
-                    api_key=self.api_key,
-                    timeout=REQUEST_TIMEOUT,
-                    **extra,
-                )
+                text, usage, finish_reason = self._stream_once(messages, extra)
                 break
-            except Exception:
+            except Exception as err:
                 if attempt == QUICK_RETRIES:
                     raise
+                print(f"[{self.model_string}] API call failed (attempt {attempt + 1}/{QUICK_RETRIES + 1}), "
+                      f"retrying: {type(err).__name__}: {str(err)[:200]}", flush=True)
                 time.sleep(2 * (attempt + 1))
         with self._lock:
             self.calls += 1
-            if response.usage:
-                self.prompt_tokens += response.usage.prompt_tokens or 0
-                self.completion_tokens += response.usage.completion_tokens or 0
-        choice = response.choices[0]
-        if not (choice.message.content or "").strip():
-            raise NoAnswerError(f"empty answer (finish_reason={choice.finish_reason})")
-        return choice.message.content
+            if usage:
+                self.prompt_tokens += usage.prompt_tokens or 0
+                self.completion_tokens += usage.completion_tokens or 0
+        if not text.strip():
+            raise NoAnswerError(f"empty answer (finish_reason={finish_reason})")
+        return text
+
+    def _stream_once(self, messages, extra):
+        """One streamed API call. Returns (answer text, usage, finish_reason). The thinking
+        (reasoning_content) is received but not kept; only the answer text is returned."""
+        start = time.monotonic()
+        stream = completion(
+            model=self.model_string,
+            messages=messages,
+            api_base=KIMI_BASE_URL,
+            api_key=self.api_key,
+            stream=True,
+            stream_options={"include_usage": True},  # token counts arrive in the last chunk
+            timeout=STREAM_IDLE_TIMEOUT,             # with streaming: max wait for the next data
+            max_retries=0,  # no silent retries inside the OpenAI client; only the loop above retries
+            **extra,
+        )
+        parts, usage, finish_reason = [], None, None
+        for chunk in stream:
+            if time.monotonic() - start > MAX_CALL_SECONDS:
+                raise TimeoutError(f"call still streaming after {MAX_CALL_SECONDS} s")
+            if getattr(chunk, "usage", None):
+                usage = chunk.usage
+            if chunk.choices:
+                choice = chunk.choices[0]
+                if choice.delta is not None and choice.delta.content:
+                    parts.append(choice.delta.content)
+                if choice.finish_reason:
+                    finish_reason = choice.finish_reason
+        return "".join(parts), usage, finish_reason
 
 
 class MockEngine(LiteLLMEngine):

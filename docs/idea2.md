@@ -141,13 +141,24 @@ test split (`{"cmd": "test"}`).
 
 | Frame | The LLM writes | Fixed by the harness | Seed (`julia/idea2/seeds/`) |
 |---|---|---|---|
-| `precond` | `setup(P, θ) -> S`, `precond!(z, r, P, S, θ)` | flexible CG (`run_precond`, `iterations_precond`) | `precond_jacobi_poly.jl`: z = Σ c_j (D⁻¹A)^j D⁻¹ r; θ0 = [1,0,0] is Jacobi-PCG |
-| `solver` | `init(P, θ) -> S`, `step!(x, r, P, S, θ)` | residual update, x0 = 0 (`run_solver`, `iterations_solver`) | `solver_jacobi_momentum.jl`: damped Jacobi with momentum (ω, β) |
+| `precond` | `setup(P, θ) -> S`, `precond!(z, r, P, S, θ)` (optionally `prepare(P) -> C` and `setup(P, C, θ)`) | flexible CG (`run_precond`, `iterations_precond`) | `precond_jacobi_poly.jl`: z = Σ c_j (D⁻¹A)^j D⁻¹ r; θ0 = [1,0,0] is Jacobi-PCG |
+| `solver` | `init(P, θ) -> S`, `step!(x, r, P, S, θ)` (optionally `prepare(P) -> C` and `init(P, C, θ)`) | residual update, x0 = 0 (`run_solver`, `iterations_solver`) | `solver_jacobi_momentum.jl`: damped Jacobi with momentum (ω, β) |
 
 Every program also defines `THETA0`, `LOWER`, `UPPER`, `THETA_NAMES`. Inside, it can use
 the fields of `DiffusionProblem` (`N, n, k, tw, te, ts, tn, A, diag, b`) and `matvec!`.
+
+Optionally a program defines `prepare(P) -> C`; then the first function takes its result,
+`setup(P, C, θ)` / `init(P, C, θ)`. `prepare` runs once per problem, is cached per
+candidate, and is **not differentiated** (C is passed to Enzyme as `Const`). It exists
+because Enzyme has no rules for LAPACK factorizations (`inv`/`lu` → getrf, `eigen` → syevr),
+which crash autodiff even on θ-independent matrices; programs put factorizations in
+`prepare` and use the results through `mul!`. Programs without `prepare` work as before.
+
 Rules given to the LLM (`prompts.SYSTEM`): Base + LinearAlgebra only, no sparse
-factorizations, differentiable in θ (no branching on θ), cost per iteration ~linear in n.
+factorizations, all factorizations/inverses/decompositions in `prepare` (never on a matrix
+that depends on θ), differentiable in θ (no branching on θ), cost per iteration ~linear in n.
+If autodiff fails, the error shown to the LLM starts with a hint to move such work into
+`prepare` (`AD_HINT` in `server.jl`).
 
 ### Three feedback modes (`--mode`)
 

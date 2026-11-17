@@ -14,7 +14,7 @@ stages: the test-function sweeps and `kimi-k3`.
 | Dimension n | 1 to 100 | the datasets |
 | Conditioning | κ 1 to 10⁴ (test functions), contrast 1 to ~400 (solvers) | the datasets |
 | Model | `kimi-k2.6:nothink`, `kimi-k2.6:think`, `kimi-k3` (thinking is its default) | the plan |
-| Feedback to the LLM | `loss` (current loss only) or `history` (every earlier θ and loss) | the plan |
+| Feedback to the LLM | `loss` (current loss only) or `history` (also the last 10 earlier θ and their losses) | the plan |
 
 The LLM always sees the problem's code, never its constants or the answer key. Every run
 takes 10 TextGrad steps (3 LLM calls each), except the `long` stage, which takes 30, and
@@ -77,9 +77,10 @@ The order matters only within each person's list. We can run our stages at the s
   Run it with `--workers 2`: with 4 workers each call was slower and more of them stalled.
 - **Stalled `kimi-k3` calls.** The first `models-k3` launch lost most of a night to calls that
   Moonshot finished and billed but whose answer never reached the laptop; the client waited
-  out its timeout and resent them (~$5–8 of discarded calls). `python/idea1/llm.py` now
-  streams answers and gives up on a call only after 5 minutes with no data, which fixed it;
-  the last 15 `models-k3` runs ran with no stalls.
+  out its timeout and resent them (~$5–8 of discarded calls). For the rest of the stage we ran
+  a local version of `python/idea1/llm.py` (not committed) that streams answers and gives up
+  on a call only after 5 minutes with no data, which fixed it; the
+  last 15 `models-k3` runs ran with no stalls.
 - **Empty answers with thinking models.** In `models-k26think`, 6 of 100 steps (all on
   logcosh problems) ended with an empty answer: the model used the API's default output
   limit thinking during the update call and never wrote θ. These are recorded as the

@@ -129,9 +129,18 @@ def get_coder(spec):
     return get_engine(spec)
 
 
+REQUIRED = ("THETA0", "LOWER", "UPPER", "THETA_NAMES")
+
+
 def extract_code(reply):
+    """The last complete program in the reply: a ```julia block that defines THETA0, LOWER, UPPER,
+    THETA_NAMES and an interface function. Replies sometimes contain several drafts and are cut
+    off at the output limit, so the last block alone may be a fragment. Returns (code, n_blocks)."""
     blocks = re.findall(r"```julia\s*\n(.*?)```", reply, re.S)
-    return blocks[-1] if blocks else None
+    for block in reversed(blocks):
+        if all(f"const {name}" in block for name in REQUIRED) and ("precond!" in block or "step!" in block):
+            return block, len(blocks)
+    return None, len(blocks)
 
 
 def score_of(ev):
@@ -211,9 +220,13 @@ def main():
         except Exception as err:          # API failure or empty answer: counts as a used call
             reply = None
             ev = {"ok": False, "stage": "asking the model", "error": f"{type(err).__name__}: {err}"}
-        code = extract_code(reply) if reply else None
+        code, n_blocks = extract_code(reply) if reply else (None, 0)
         if reply and code is None:
-            ev = {"ok": False, "stage": "reading the reply", "error": "no ```julia code block in the reply"}
+            error = ("no ```julia code block in the reply" if n_blocks == 0 else
+                     f"the reply had {n_blocks} code blocks but none was a complete program (defining "
+                     "THETA0, LOWER, UPPER, THETA_NAMES and the interface functions); it may have been cut "
+                     "off for being too long. Reply with a short explanation and one complete code block.")
+            ev = {"ok": False, "stage": "reading the reply", "error": error}
         if code is not None:
             ev = evaluate(code)
         s = score_of(ev)

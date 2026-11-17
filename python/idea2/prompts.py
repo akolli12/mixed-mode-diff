@@ -25,13 +25,19 @@ INTERFACES = {
 Your code must define:
     setup(P, θ) -> S                 # anything precomputed from the problem (any type)
     precond!(z, r, P, S, θ)          # z = M⁻¹ r, written into z in place; return nothing
-The preconditioner should approximate A⁻¹ and be (close to) symmetric positive definite.""",
+The preconditioner should approximate A⁻¹ and be (close to) symmetric positive definite.
+Optionally also define
+    prepare(P) -> C                  # work that does not depend on θ (see the rules)
+in which case setup takes its result as well: setup(P, C, θ) -> S.""",
     "solver": """You write an ITERATIVE SOLVER, one iteration at a time.
 Your code must define:
     init(P, θ) -> S                  # state carried between iterations (any type)
     step!(x, r, P, S, θ)             # one iteration: update x in place, given the current
                                      # residual r = b - A x (read-only); return nothing
-The harness recomputes r after every step and starts from x = 0.""",
+The harness recomputes r after every step and starts from x = 0.
+Optionally also define
+    prepare(P) -> C                  # work that does not depend on θ (see the rules)
+in which case init takes its result as well: init(P, C, θ) -> S.""",
 }
 
 SYSTEM = """You design iterative methods for linear systems from diffusion problems with highly variable coefficients.
@@ -59,12 +65,13 @@ Tunable numbers: put every number you want tuned into the vector θ, and define
 {tuning_note}
 
 Rules:
-- Plain Julia with only Base and LinearAlgebra: no other packages, no sparse factorisations (lu, cholesky, ldlt of sparse matrices), no try/catch, no global mutable state, no printing or files.
+- Plain Julia with only Base and LinearAlgebra: no other packages (so no SparseArrays: store small sparse operators as dense matrices or index/value vectors), no sparse factorisations (lu, cholesky, ldlt of sparse matrices), no try/catch, no global mutable state, no printing or files.
+- Automatic differentiation goes through everything except prepare, and it cannot go through computing matrix factorisations, inverses or decompositions (lu, cholesky, qr, eigen, svd, inv, \\). Compute all of these in prepare(P), which runs once per problem without differentiation and must not use θ. The other functions can use the results freely: apply a Cholesky factor F from prepare with ldiv!(y, F, x), or an inverse with mul!. An exact coarse solve this way (a coarse matrix built from P, factorised in prepare) is usually much stronger than a few iterations of a simple method. Never factorise or invert a matrix that depends on θ.
 - The code must be differentiable with respect to θ by automatic differentiation (Enzyme): do not branch on values computed from θ, convert θ to integers, or sort by values that depend on θ.
-- The cost of one iteration should grow roughly linearly with n: no dense n x n matrices. Small dense matrices (a coarse space of up to a few hundred unknowns) are fine, and setup may precompute anything from P.
+- The cost of one iteration should grow roughly linearly with n: no dense n x n matrices. Small dense matrices (a coarse space of up to a few hundred unknowns) are fine, and prepare may precompute anything from P.
 - Methods are scored on several instances at each of these contrast levels: {levels}.
 
-Reply with the complete new program in a single ```julia code block. You may explain your idea briefly before it."""
+Reply with a short explanation of your idea (a few sentences), then the complete program in exactly one ```julia code block. Do not write drafts, alternatives or partial code blocks: only a complete program is used, and very long replies are cut off before they finish."""
 
 TUNING_NOTES = {
     "llm_only": "Your THETA0 values are used exactly as written; nothing tunes them.",
@@ -143,5 +150,6 @@ def user_prompt(mode, parent, levels, last_failure=None, history=None):
         parts.append("Earlier attempts (score, or the stage where it failed): " + "; ".join(history[-8:]))
     if last_failure:
         parts.append(f"Your previous program failed while {last_failure['stage']}:\n{last_failure['error'][:1200]}")
-    parts.append("Write an improved program.")
+    parts.append("Write an improved program: a few sentences on the idea, then the complete program in exactly one "
+                 "```julia code block.")
     return "\n\n".join(parts)

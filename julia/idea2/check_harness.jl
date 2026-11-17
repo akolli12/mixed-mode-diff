@@ -1,6 +1,7 @@
 # Checks the Idea 2 harness on the starting programs (no LLM, free):
 # Enzyme's gradient through m solver iterations vs finite differences, tuning, and
-# iteration counts per contrast.
+# iteration counts per contrast. Also runs the two test programs in tests/, which use the
+# optional prepare(P) for an LU-based block inverse that Enzyme could not differentiate.
 #
 #   julia --project=julia julia/idea2/check_harness.jl [family] [N]
 
@@ -16,9 +17,10 @@ val = load_problems(datadir, family, N, "train", 5:6, levels)
 m, maxit = 30, 500
 println("$family N=$N: contrast levels $levels, $(length(train)) training problems, m = $m")
 
-for (frame, file) in [("precond", "precond_jacobi_poly.jl"), ("solver", "solver_jacobi_momentum.jl")]
+for (frame, file) in [("precond", "seeds/precond_jacobi_poly.jl"), ("solver", "seeds/solver_jacobi_momentum.jl"),
+                       ("precond", "tests/precond_block_jacobi_prepare.jl"), ("solver", "tests/solver_block_jacobi_prepare.jl")]
     println("\n=== $frame: $file")
-    c = load_candidate(read(joinpath(@__DIR__, "seeds", file), String), frame)
+    c = load_candidate(read(joinpath(@__DIR__, file), String), frame)
     t0 = time()
     losses, g = Base.invokelatest(loss_and_grad, c, c.theta0, train, m)
     t = time() - t0

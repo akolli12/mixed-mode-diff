@@ -102,7 +102,7 @@ the guide).
 - **High-frequency Helmholtz** (`python/helmholtz.py`): with a PML, four media
   (constant, layered, smooth, inclusions), frequency swept from 2 to 32 wavelengths across
   the domain at 10 points per wavelength.
-- **Baselines** (`python/baselines.py`): CG and Jacobi-, ILU(0)- and AMG-preconditioned CG
+- **Baselines** (`python/baselines.py`): CG and Jacobi-, symmetric Gauss–Seidel- and AMG-preconditioned CG
   on diffusion; GMRES with and without the shifted-Laplacian preconditioner on Helmholtz.
 - **Julia access** (`julia/MMDData`): loaders and assemblers that rebuild each system
   exactly as the Python generators do, with `selfcheck` against stored reference values.

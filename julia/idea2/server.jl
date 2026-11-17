@@ -25,6 +25,9 @@ clean(x::AbstractDict) = Dict(string(k) => clean(v) for (k, v) in x)
 clean(x::NamedTuple) = clean(Dict(pairs(x)))
 clean(x) = x
 
+# Shown to the LLM first (its error text is truncated), when Enzyme fails on a candidate.
+const AD_HINT = "Automatic differentiation failed. This usually means a matrix factorisation, inverse or decomposition (lu, inv, \\, qr, eigen, svd, cholesky) is inside setup/init/precond!/step!, or is applied in a way Enzyme cannot differentiate. Move it into prepare(P), which is not differentiated, and in the other functions use its result through mul! (an inverse) or ldiv! (a Cholesky factor). Details: "
+
 short_error(err) = first(sprint(showerror, err), 1500) * (get(ENV, "MMD_DEBUG", "") == "1" ? sprint(Base.show_backtrace, catch_backtrace()) : "")
 
 function pick_levels(spec, all_levels)
@@ -49,8 +52,13 @@ function evaluate(c::Candidate, tune_it::Bool, steps::Int)
     m, maxit = CONFIG["m"], CONFIG["maxit"]
     out = Dict{String,Any}("ok" => true, "names" => c.names, "theta0" => c.theta0,
                            "lower" => c.lower, "upper" => c.upper)
-    stage = "tuning"
+    stage = "prepare"
     try
+        t_prep = time()
+        for P in TRAIN; prepared(c, P); end
+        for P in VAL; prepared(c, P); end
+        out["prepare_seconds"] = time() - t_prep
+        stage = "tuning"
         if tune_it
             best, history, g_start = tune(c, TRAIN, m; steps = steps)
             out["theta"] = best.θ
@@ -64,7 +72,9 @@ function evaluate(c::Candidate, tune_it::Bool, steps::Int)
         stage = "validation"
         out["val"] = evaluate_iterations(c, out["theta"], VAL, maxit)
     catch err
-        return Dict("ok" => false, "stage" => stage, "error" => short_error(err))
+        msg = short_error(err)
+        occursin("Enzyme", msg) && (msg = AD_HINT * msg)
+        return Dict("ok" => false, "stage" => stage, "error" => msg)
     end
     return out
 end

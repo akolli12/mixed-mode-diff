@@ -94,9 +94,9 @@ Julia process), CPU permitting.
 | Step | What | Track | Needs | Who | Runs | LLM calls | Time | Cost | Status |
 |---|---|---|---|---|---|---|---|---|---|
 | 0 | Setup and free checks (below) | – | – | each of us | – | 0 | 15 min | free | **done** on both machines |
-| 1 | Housekeeping | C | – | Alaina | – | 0 | 10 min | free | to do |
-| 2 | Pilot, `precond` frame (Kimi) | R | 0 | Alaina | 1 | 5 | ~30 min | ~$0.10 | started (thinking-on try returned no code); redo with decision 1 |
-| 3 | Pilot, `solver` frame (Kimi) | R | 0 | Alaina | 1 | 5 | ~30 min | ~$0.10 | to do |
+| 1 | Housekeeping | C | – | Alaina | – | 0 | 10 min | free | **done** |
+| 2 | Pilot, `precond` frame (Kimi) | R | 0 | Alaina | 1 | 5 | ~45–60 min | ~$0.10 | done (pilot4): test 2.714 → 2.031, no Enzyme failures; pilot2 (old harness) 1.743 |
+| 3 | Pilot, `solver` frame (Kimi) | R | 0 | Alaina | 1 | 5 | ~45–60 min | ~$0.10 | done (pilot4): test 3.452 → 2.562, no Enzyme failures (pilot2: 4/5 failed) |
 | 4 | Full baseline sweep (small code change, then run) | C | – | Artemis | – | 0 | ~1–2 h | free | pilot done (N = 128, 1 instance) |
 | 5 | Phase 1a: `channels`, `precond`, 3 modes × 3 repeats (Kimi) | R | 2 | Alaina | 9 | 180 | ~3–5 h | ~$4 | to do |
 | 6 | Summary script `python/idea2/summarize.py` | C | write while 5 runs | Alaina | – | 0 | – | free | to do |
@@ -108,7 +108,7 @@ Julia process), CPU permitting.
 | 12 | Astra pilot: cost and time per call | R | 11 | Alaina | 2 | 10 | ~1 h | ~$5 | to do |
 | 13 | Phase 1a with Astra (low reasoning) | R | 8, 12 | Alaina | 9 | 180 | ~5–10 h | ~$55 | to do |
 | 14 | Work counting in the harness and baselines | C | 4 | Artemis | – | 0 | – | free | to do |
-| 15 | Strong seeds in Julia: ILU(0) and two-level smoothed-aggregation AMG | C | – | Artemis | – | 0 | – | free | to do |
+| 15 | Strong seeds in Julia: symmetric Gauss–Seidel and two-level smoothed-aggregation AMG | C | – | Artemis | – | 0 | – | free | to do |
 | 16 | Phase 2 runs with Astra (medium reasoning) | R | 8, 12, 14, 15 | Artemis | ~4 | ~140 | ~5–8 h | ~$110 | to do |
 | 17 | Generalization: best programs at N = 128 (small script) | C + R | 16 | Artemis | – | 0 | ~1 h | free | to do |
 | 18 | Helmholtz (stretch): GMRES harness, complex arithmetic, training loss | C | 16 | Artemis | TBD | TBD | TBD | TBD | only if time |
@@ -147,21 +147,36 @@ rm -r results/idea2/mock-test
 
 ### Step 1. Housekeeping
 
-- `idea2.md` lists ILU(0) among the baselines, but the pilot sweep used symmetric
-  Gauss–Seidel-PCG because SciPy's ILU never converged. Update the doc, or add ILU(0) in
-  Julia with the strong seeds (step 15).
-- `idea1_runs.md` says history feedback shows "every earlier θ and loss"; the code shows the
-  last 10 (`HISTORY_LEN` in `python/idea1/textgrad_step.py`).
+Done: ILU(0) removed from the docs and the `baselines.py` docstring (the baseline sweep uses
+symmetric Gauss–Seidel-PCG, because SciPy's ILU never converged), and `idea1_runs.md` now
+says history feedback shows the last 10 earlier θ (`HISTORY_LEN` in
+`python/idea1/textgrad_step.py`).
 
 ### Steps 2–3. Kimi pilots
+
+History: `pilot-…` (thinking on, no code), `pilot2-…` (after the reply-format fix: precond
+worked; solver 4/5 failed because Enzyme cannot differentiate `inv`/`lu`/`eigen`),
+`pilot3-…` (with `prepare`, but the first wording of the rule made Kimi drop the exact
+coarse solve; precond test 2.505), `pilot4-…` (rule fixed; see the results log). The
+harness now has an optional `prepare(P)` for that (see `docs/idea2_changes.md`). First
+check it, free and without the LLM:
+
+```
+julia --project=julia julia/idea2/check_harness.jl channels 64
+python/.venv/bin/python python/idea2/search.py --model mock --iterations 4 \
+    --train 1 2 --val 5 6 --test 1 2 --name mock-test
+rm -r results/idea2/mock-test
+```
+
+Then the pilots:
 
 ```
 python/.venv/bin/python python/idea2/search.py --family channels --N 64 \
     --frame precond --mode ours --model kimi-k2.6:nothink --iterations 5 \
-    --name pilot-channels64-precond-ours
+    --name pilot4-channels64-precond-ours
 ```
 
-and the same with `--frame solver --name pilot-channels64-solver-ours`. Then read
+and the same with `--frame solver --name pilot4-channels64-solver-ours`. Then read
 `results/idea2/<name>/candidates.jsonl` (or use the quick check under "When a run
 finishes"): do the programs compile, run and tune? Which stage fails, and with what error?
 If the LLM keeps breaking the same rule (branching on θ, expensive setup, wrong interface),
@@ -184,7 +199,7 @@ This uses the dataset-generation Python (numpy, scipy, pyamg, h5py), not the Tex
 Before comparing with search results, note that the baselines use SciPy solvers with a cap of
 5,000 iterations, while the search scores in Julia (flexible CG, cap 500, extrapolated past
 the cap): compare at the same cap, or score the baselines in the Julia harness (step 15 does
-this for ILU(0) and AMG).
+this for symmetric Gauss–Seidel and AMG).
 
 ### Steps 5, 7, 9. Phase 1 runs (Kimi)
 
@@ -257,7 +272,7 @@ whether the gradient report helps more with a stronger model.
 - **14, work counting:** add the total work of setup and solve, in matrix–vector-product
   equivalents (and wall time), to `evaluate_iterations` in `julia/idea2/harness.jl` and to the
   baselines, so a program cannot win by doing more work per iteration.
-- **15, strong seeds:** ILU(0) and a two-level smoothed-aggregation AMG preconditioner in
+- **15, strong seeds:** a symmetric Gauss–Seidel and a two-level smoothed-aggregation AMG preconditioner in
   `julia/idea2/seeds/`, written within the rules (θ = smooth knobs such as smoothing
   weights; discrete choices fixed in `setup`). Check that their iteration counts match the
   Python baselines. `search.py` chooses the seed from `SEEDS`; add a `--seed` option to pick
@@ -333,7 +348,8 @@ $0.95 / $4 per million input / output tokens; Astra at Prime Intellect's listed 
 
 | Run name | Step | Who | Calls | Failed candidates | Validation score (seed → best) | Test score (seed → best) | Tokens in / out | Cost | Notes |
 |---|---|---|---|---|---|---|---|---|---|
-| | | | | | | | | | |
+| pilot4-channels64-precond-ours | 2 | Alaina | 5 | 2 (timeout > 900 s; Cholesky of a non-SPD coarse matrix) | 2.559 → 1.829 | 2.714 → 2.031 | 13.0k / 36.3k | ~$0.16 | all programs: Cholesky coarse solve in `prepare` |
+| pilot4-channels64-solver-ours | 3 | Alaina | 5 | 2 (mutating a NamedTuple; Cholesky of a non-SPD coarse matrix) | 3.397 → 2.470 | 3.452 → 2.562 | 14.0k / 94.9k | ~$0.39 | two replies hit the 32k output cap |
 
 ## Results log
 
@@ -344,6 +360,7 @@ the folder it came from.
 |---|---|---|---|---|
 | 0 | | Artemis | Enzyme's gradients through all solver iterations match finite differences | `julia/idea2/check_harness.jl` |
 | 0 | | Artemis | Tuning the Jacobi-polynomial seed alone lowers its median iterations at contrast 10⁴ from 480 to 371 | |
+| 2–3 | 2026-11-17 | Alaina | With `prepare(P)` both frames work without Enzyme failures. precond: test 2.714 → 2.031, median iterations at contrast 10⁸ 9623 → 100 (pilot2 on the old harness reached 1.743); solver: test 3.452 → 2.562, contrast 10⁸ 3260 → 617 | `results/idea2/pilot4-channels64-*-ours` |
 | 4 (pilot) | 2026-10-17 | Alaina | Inclusions, N = 128: AMG-PCG 8 → 251 iterations from contrast 10⁰ to 10⁸; Helmholtz inclusions with exact shifted Laplacian 15 → 260 (2 → 32 wavelengths) | `results/baselines_*.csv` |
 
 ## What gets recorded
