@@ -44,10 +44,10 @@ so we know where AMG-PCG struggles. These are the reference curves for Part 2.
 1. **Count work, not only iterations.** Add to `evaluate_iterations` (and to the
    baselines) the total cost of setup + solve in matvec equivalents, or Julia runtime,
    so a program cannot win by doing a lot of work per iteration.
-2. **Strong seeds** in `julia/idea2/seeds/`: ILU(0) preconditioner and a two-level
-   smoothed-aggregation AMG, written in plain Julia within the rules (θ = smooth knobs only,
+2. **Strong seeds** in `julia/idea2/seeds/`: a symmetric Gauss–Seidel preconditioner and a
+   two-level smoothed-aggregation AMG, written in plain Julia within the rules (θ = smooth knobs only,
    e.g. smoothing weights; discrete choices such as the coarsening fixed in `setup`).
-   Check their iteration counts match `pyamg`/ILU from `baselines.py`. `search.py` picks the
+   Check their iteration counts match `pyamg`/symmetric Gauss–Seidel from `baselines.py`. `search.py` picks the
    seed from `SEEDS`; add a `--seed` option to choose a file.
 3. **Model**: the best model we can get access to (e.g. the newest Claude or GPT model via
    its API). Add an engine for it next to `KimiEngine` in `python/idea1/llm.py`, selected
@@ -69,7 +69,7 @@ matching training loss.
 | Piece | Status | Where |
 |---|---|---|
 | Diffusion datasets (5 families, N = 64/128, train/test) | done | `data/diffusion/`, `python/diffusion.py` |
-| Baseline code (CG, Jacobi/ILU(0)/AMG-PCG) | done; full sweep not yet run | `python/baselines.py` |
+| Baseline code (CG, Jacobi-, symmetric Gauss–Seidel- and AMG-PCG) | done; pilot sweep done (N = 128, 1 test instance per family), full sweep not yet run | `python/baselines.py`, `results/baselines_*` |
 | Julia harness (run, tune, report, score a program) | done, gradients checked against finite differences | `julia/idea2/harness.jl` |
 | Starting programs (one per search space) | done | `julia/idea2/seeds/` |
 | Python ↔ Julia bridge | done | `julia/idea2/server.jl` |
